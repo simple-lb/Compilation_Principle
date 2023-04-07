@@ -18,6 +18,7 @@ letter   [A-Za-z]
 digit    [0-9]
 id       {letter}({letter}|{digit})*
 number   {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
+basic    "int"|"float"|"char"|"bool"
 
 %%
 
@@ -26,6 +27,11 @@ number   {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
 if         { printf("IF:%s\n",yytext);   return (IF_TKN); }
 else       { printf("ELSE:%s\n",yytext); return (ELSE_TKN); }
 break      { printf("BREAK:%s\n",yytext); return (BREAK_TKN); }
+true       { printf("TRUE:%s\n",yytext); return (TRUE_TKN); }
+false      { printf("FALSE:%s\n",yytext); return (FALSE_TKN); }
+while      { printf("WHILE:%s\n",yytext); return (WHILE_TKN); }
+do         { printf("DO:%s\n",yytext); return (DO_TKN); }
+{basic}    { printf("BASIC:%s\n",yytext); return (BASIC_TKN); }
 {id}       { printf("ID:%s\n",yytext); return (ID_TKN); }
 {number}   { printf("Num:%s\n",yytext); return (NUM_TKN); } 
 
@@ -35,6 +41,7 @@ break      { printf("BREAK:%s\n",yytext); return (BREAK_TKN); }
 "<>"       { yylval = RELOP_NE; printf("NE:%s\n",yytext);  return(RELOP_TKN); }
 ">"        { yylval = RELOP_GT; printf("GT:%s\n",yytext);  return(RELOP_TKN); }
 ">="       { yylval = RELOP_GE; printf("GE:%s\n",yytext);  return(RELOP_TKN); }
+"!="       { yylval = RELOP_NEQ; printf("NEQ:%s\n",yytext);  return(RELOP_TKN); }
 
 [\/][\*]([^\*])*[\*]([^\*\/](([^\*])*)[\*]|[\*])*(\/)  { printf("±¸×¢:%s\n",yytext); }
 

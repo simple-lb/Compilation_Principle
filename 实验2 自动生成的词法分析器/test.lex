@@ -30,16 +30,16 @@
 #define FALSE_TKN   617
 #define BASIC_TKN   618
 
-/*ÊéÉÏÊ¹ÓÃ¸Ã±äÁ¿yylval£¬µ«¸Ã±äÁ¿²»ÊÇflex×Ô´øµÄ£¬ËùÒÔÎÒÃÇÒª×Ô¼º¶¨ÒåÕâ¸ö±äÁ¿*/
+/*ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã¸Ã±ï¿½ï¿½ï¿½yylvalï¿½ï¿½ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½flexï¿½Ô´ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 int yylval;
 
-/*¸Ãº¯Êý¿ÉÒÔ½«±äÁ¿Ìí¼Óµ½·ûºÅ±íÖÐ£¬ÔÚÕâÀïÎÒÃÇÃ»ÓÐÊµÏÖ¸Ã¹¦ÄÜ*/
+/*ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½Å±ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½Ö¸Ã¹ï¿½ï¿½ï¿½*/
 int installID() ;
 
-/*¸Ãº¯Êý¿ÉÒÔ½«ÊýÖµÌí¼Óµ½ÊýÖµ±íÖÐ£¬ÔÚÕâÀïÎÒÃÇÃ»ÓÐÊµÏÖ¸Ã¹¦ÄÜ*/
+/*ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½Ö¸Ã¹ï¿½ï¿½ï¿½*/
 int installNum() ;
 
-/*Çë²Î¿¼ÏÂÃæÍøÒ³ÖÐµÄËµÃ÷*/
+/*ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò³ï¿½Ðµï¿½Ëµï¿½ï¿½*/
 /* http://www.ibm.com/developerworks/cn/linux/sdk/lex/index.html */
 
 %}
@@ -79,8 +79,8 @@ break      { printf("BREAK:%s\n",yytext); return (BREAK_TKN); }
 ">"        { yylval = RELOP_GT; printf("GT:%s\n",yytext);  return(RELOP_TKN); }
 ">="       { yylval = RELOP_GE; printf("GE:%s\n",yytext);  return(RELOP_TKN); }
 
-"=="       { yylval = RELOP_DEQ; printf("GE:%s\n",yytext);  return(RELOP_TKN); }
-"!="       { yylval = RELOP_NEQ; printf("GE:%s\n",yytext);  return(RELOP_TKN); }
+"=="       { yylval = RELOP_DEQ; printf("DEQ:%s\n",yytext);  return(RELOP_TKN); }
+"!="       { yylval = RELOP_NEQ; printf("NEQ:%s\n",yytext);  return(RELOP_TKN); }
 
 
 [\/][\*]([^\*])*[\*]([^\*\/](([^\*])*)[\*]|[\*])*(\/)  { printf("Remark:%s\n",yytext); }
@@ -89,13 +89,13 @@ break      { printf("BREAK:%s\n",yytext); return (BREAK_TKN); }
 
 %%
 
-/*¸Ãº¯ÊýÉèÖÃyyin±äÁ¿£¬fflex¶Ôyyin±äÁ¿Ëù¶ÔÓ¦µÄÎÄ¼þ½øÐÐ´Ê·¨·ÖÎö*/
+/*ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½yyinï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fflexï¿½ï¿½yyinï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Ð´Ê·ï¿½ï¿½ï¿½ï¿½ï¿½*/
 void BeginCompileOneFile( const char * filename )
 {  
    yyin = fopen( filename, "r");
    fseek( yyin, 0, SEEK_SET );
 
-/* È±Ê¡Çé¿öÏÂ£¬yyin ºÍ yyout ¶¼Ö¸Ïò±ê×¼ÊäÈëºÍÊä³ö¡£
+/* È±Ê¡ï¿½ï¿½ï¿½ï¿½Â£ï¿½yyin ï¿½ï¿½ yyout ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
    yyout = fopen( outputfilename, "w");
    fseek( yyout, 0, SEEK_SET );
 */
@@ -107,7 +107,7 @@ void EndCompileOneFile(void)
    yyin = 0;
 }
 
-/*Èç¹ûº¯ÊýµÄ·µ»ØÖµÊÇ1£¬¾ÍÍ£Ö¹½âÎö¡£ Òò´ËËü¿ÉÒÔÓÃÀ´½âÎö¶à¸öÎÄ¼þ¡£*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½Öµï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½Í£Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½*/
 int yywrap()
 {
 	return 1;
@@ -124,7 +124,7 @@ int installNum()
 }
 
 
-/*ÒòÎªlex.yy.cÊÇCÓïÑÔÐ´µÄ£¬ÏÂÃæÕâÐ©º¯ÊýÊÇÒÔCÓïÑÔµÄº¯Êýµ÷ÓÃ·½Ê½±àÒëµÄ
+/*ï¿½ï¿½Îªlex.yy.cï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Ð´ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÔµÄºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½
 #ifdef __cplusplus
     extern "C" int yylex(void);
     extern "C" void BeginCompileOneFile( const char * filename );
@@ -137,10 +137,10 @@ int main()
 { int token;
 char filename[1000];
 
-	printf("ÇëÊäÈëÒª±àÒëµÄÔ´³ÌÐòÎÄ¼þÃû£º"); gets(filename);
+	printf("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½"); gets(filename);
 	BeginCompileOneFile( filename );
 
-	//µ±flexÉ¨Ãèµ½ÎÄ¼þÄ©Î²£¬yylexº¯Êý·µ»Ø0
+	//ï¿½ï¿½flexÉ¨ï¿½èµ½ï¿½Ä¼ï¿½Ä©Î²ï¿½ï¿½yylexï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
     while( ( token = yylex() ) > 0 ) ;
 
 	EndCompileOneFile();
