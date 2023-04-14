@@ -161,7 +161,7 @@ void A()
         stmt();
         return;
     }
-    if(lookahead==ID_TKN || lookahead==IF_TKN || lookahead==WHILE_TKN || lookahead==DO_TKN || lookahead==BREAK_TKN || lookahead=='{') {
+    if(lookahead==ID_TKN || lookahead==IF_TKN || lookahead==WHILE_TKN || lookahead==DO_TKN || lookahead==BREAK_TKN || lookahead=='{' || lookahead=='}') {
         printf("A ¡ú empty \n");
         return;
     }
