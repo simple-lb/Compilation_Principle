@@ -4,11 +4,12 @@ static char yysccsid[] = "@(#)yaccpar	1.8 (Berkeley) 01/02/91\n\
  and to remove the warning of unreferenced yyerrlab and yynewerror labels";
 #endif
 #define YYBYACC 1
-#line 1 "expr.y"
+#line 1 ".\expr.y"
  
 
 #include <ctype.h>
 #include <stdio.h>
+
 
 /*YYSTYPE是属性栈的元素的类型，该类型由我们定义,yyparse会使用该类型创建属性栈等等*/
 #define YYSTYPE double
@@ -21,44 +22,73 @@ void yyerror( char * ErrStr )
     printf("错误信息:%s\n", ErrStr);
 }
 
-#line 25 "y.tab.c"
+#line 26 "y.tab.c"
 #define NUMBER 257
-#define UMINUS 258
+#define ID_TKN 258
+#define RELOP_TKN 259
+#define RELOP_LT 260
+#define RELOP_LE 261
+#define RELOP_EQ 262
+#define RELOP_NE 263
+#define RELOP_GT 264
+#define RELOP_GE 265
+#define IF_TKN 266
+#define ELSE_TKN 267
+#define BREAK_TKN 268
+#define WHILE_TKN 269
+#define DO_TKN 270
+#define UMINUS 271
 #define YYERRCODE 256
 short yylhs[] = {                                        -1,
-    0,    0,    0,    0,    1,    1,    1,    1,    1,    1,
-    1,
+    0,    1,    4,    2,    3,    3,    3,    3,    3,    3,
+    7,    7,    6,    8,    8,    5,   10,   10,   11,   11,
+    9,   13,   13,   14,   14,   12,   12,   12,
 };
 short yylen[] = {                                         2,
-    3,    2,    0,    2,    3,    3,    3,    3,    3,    2,
-    1,
+    1,    3,    0,    3,    4,    6,    5,    7,    2,    1,
+    2,    0,    2,    2,    0,    2,    2,    0,    2,    2,
+    2,    2,    0,    2,    2,    3,    1,    1,
 };
 short yydefred[] = {                                      0,
-    0,    0,    4,   11,    0,    2,    0,    0,   10,    0,
-    0,    0,    0,    0,    1,    9,    0,    0,    7,    8,
+    0,    0,    1,    0,    0,    0,    0,    0,   10,    0,
+    0,    0,    0,    9,    0,    0,    2,    3,   28,   27,
+    0,    0,    0,    0,    0,    0,    0,    0,    4,    0,
+    5,    0,    0,   16,    0,    0,    0,   21,    0,    0,
+   13,    0,    0,    0,   26,   19,   20,   17,   24,   25,
+   22,   14,    0,    7,    0,    0,    6,    0,   11,    8,
 };
 short yydgoto[] = {                                       2,
-    8,
+    9,   10,   11,   29,   25,   26,   57,   41,   23,   34,
+   35,   24,   38,   39,
 };
-short yysindex[] = {                                   -252,
-   -4,  -10,    0,    0,  -38,    0,  -38,   -5,    0,  -18,
-  -38,  -38,  -38,  -38,    0,    0,  -39,  -39,    0,    0,
+short yysindex[] = {                                   -114,
+ -118,    0,    0,  -44,  -16,  -36,  -14, -118,    0, -100,
+ -118,  -37,  -37,    0,  -37, -242,    0,    0,    0,    0,
+  -37,  -30,  -31,  -34, -231,  -11,  -10,   -7,    0,   -9,
+    0,  -37,  -37,    0,  -31,  -37,  -37,    0,  -34,  -37,
+    0, -118, -118,  -37,    0,    0,    0,    0,    0,    0,
+    0,    0, -233,    0,   -6, -118,    0,  -22,    0,    0,
 };
-short yyrindex[] = {                                      1,
+short yyrindex[] = {                                      0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    2,    7,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,  -40,  -41,   -3,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,  -40,    0,    0,    0,  -41,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0, -113,    0,    0,    0,    0,    0,    0,    0,
 };
 short yygindex[] = {                                      0,
-    8,
+   42,   32,   -2,    0,   -1,   -8,    0,    0,  -17,    9,
+    0,  -15,    6,    0,
 };
-#define YYTABLESIZE 258
-short yytable[] = {                                       6,
-    3,    7,   13,    1,   15,    3,    5,   14,    0,    0,
-    3,    5,    9,    0,   10,    0,    6,    0,   17,   18,
-   19,   20,   16,   13,   11,    0,   12,    0,   14,    7,
-    0,    0,    0,    0,    5,    0,   13,   11,    0,   12,
-    3,   14,    5,    0,    5,    3,    5,    6,    0,    6,
-    0,    6,    0,    0,    0,    0,    0,    0,    0,    0,
+#define YYTABLESIZE 221
+short yytable[] = {                                      23,
+   18,   23,   21,   23,    1,   16,   27,   36,    1,   12,
+   22,   32,   37,   33,   46,   47,   12,   23,   18,   30,
+   49,   50,   14,   13,   17,   15,   28,   40,   31,   42,
+   43,   45,   44,   56,   58,   55,   60,   15,   52,   53,
+   54,    3,   18,   48,   51,    0,    0,    0,    0,    0,
+    0,    0,    0,   59,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -66,27 +96,24 @@ short yytable[] = {                                       6,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    4,
+    0,    0,    0,    0,   12,    0,    0,    5,    0,    6,
+    7,    8,   12,    0,   12,   12,   12,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    4,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    4,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    3,
+    0,    0,    0,    0,    0,    0,    0,   23,   18,   19,
+   20,
 };
-short yycheck[] = {                                      10,
-    0,   40,   42,  256,   10,   10,   45,   47,   -1,   -1,
-   10,   10,    5,   -1,    7,   -1,   10,   -1,   11,   12,
-   13,   14,   41,   42,   43,   -1,   45,   -1,   47,   40,
-   -1,   -1,   -1,   -1,   45,   -1,   42,   43,   -1,   45,
-   40,   47,   41,   -1,   43,   45,   45,   41,   -1,   43,
-   -1,   45,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+short yycheck[] = {                                      41,
+   41,   43,   40,   45,  123,    8,   15,   42,  123,  123,
+   12,   43,   47,   45,   32,   33,   61,   59,   59,   21,
+   36,   37,   59,   40,  125,   40,  269,  259,   59,   41,
+   41,   41,   40,  267,   41,   44,   59,   41,   40,   42,
+   43,    0,   11,   35,   39,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   56,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
@@ -94,49 +121,65 @@ short yycheck[] = {                                      10,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  258,
+   -1,   -1,   -1,   -1,  258,   -1,   -1,  266,   -1,  268,
+  269,  270,  266,   -1,  268,  269,  270,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  257,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,  257,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,  257,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,  259,  259,  257,
+  258,
 };
 #define YYFINAL 2
 #ifndef YYDEBUG
 #define YYDEBUG 0
 #endif
-#define YYMAXTOKEN 258
+#define YYMAXTOKEN 271
 #if YYDEBUG
 char *yyname[] = {
-"end-of-file",0,0,0,0,0,0,0,0,0,"'\\n'",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,"'('","')'","'*'","'+'",0,"'-'",0,"'/'",0,0,0,0,0,0,0,0,0,0,0,
+"end-of-file",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,"'('","')'","'*'","'+'",0,"'-'",0,"'/'",0,0,0,0,0,0,0,0,0,0,0,"';'",
+0,"'='",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"'{'",0,"'}'",0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-"NUMBER","UMINUS",
+0,0,0,"NUMBER","ID_TKN","RELOP_TKN","RELOP_LT","RELOP_LE","RELOP_EQ","RELOP_NE",
+"RELOP_GT","RELOP_GE","IF_TKN","ELSE_TKN","BREAK_TKN","WHILE_TKN","DO_TKN",
+"UMINUS",
 };
 char *yyrule[] = {
-"$accept : lines",
-"lines : lines expr '\\n'",
-"lines : lines '\\n'",
-"lines :",
-"lines : error '\\n'",
-"expr : expr '+' expr",
-"expr : expr '-' expr",
-"expr : expr '*' expr",
-"expr : expr '/' expr",
-"expr : '(' expr ')'",
-"expr : '-' expr",
-"expr : NUMBER",
+"$accept : program",
+"program : block",
+"block : '{' stmts '}'",
+"$$1 :",
+"stmts : stmt stmts $$1",
+"stmt : ID_TKN '=' expr ';'",
+"stmt : IF_TKN '(' bool ')' stmt A",
+"stmt : WHILE_TKN '(' bool ')' stmt",
+"stmt : DO_TKN stmt WHILE_TKN '(' bool ')' ';'",
+"stmt : BREAK_TKN ';'",
+"stmt : block",
+"A : ELSE_TKN stmt",
+"A :",
+"bool : expr B",
+"B : RELOP_TKN expr",
+"B :",
+"expr : term expr1",
+"expr1 : C expr1",
+"expr1 :",
+"C : '+' term",
+"C : '-' term",
+"term : factor term1",
+"term1 : D term1",
+"term1 :",
+"D : '*' factor",
+"D : '/' factor",
+"factor : '(' expr ')'",
+"factor : ID_TKN",
+"factor : NUMBER",
 };
 #endif
 #ifndef YYSTYPE
@@ -167,7 +210,7 @@ YYSTYPE yylval;
 short yyss[YYSTACKSIZE];
 YYSTYPE yyvs[YYSTACKSIZE];
 #define yystacksize YYSTACKSIZE
-#line 50 "expr.y"
+#line 85 ".\expr.y"
 
 /*如果把lex.yy.c包含在y.tab.c中，在工程中就只需要y.tab.c，不要再有lex.yy.c，否则yylex等函数会重复定义*/
 #include "lex.yy.c"
@@ -180,7 +223,7 @@ int main()
 	printf("请输入要编译的源程序文件名："); gets(filename);
       /*因为lex.yy.c被包含在y.tab.c中，所以可以直接使用BeginCompileOneFile函数。
         否则，就要在main函数前面写声明: void BeginCompileOneFile(const char *); */
-	BeginCompileOneFile( filename );
+ 	BeginCompileOneFile( filename );
 
         if( yyparse()==0 && successFlag==1 ) 
             printf("Successful!\n");
@@ -198,7 +241,7 @@ int main()
 
 
    
-#line 202 "y.tab.c"
+#line 245 "y.tab.c"
 #define YYABORT goto yyabort
 #define YYACCEPT goto yyaccept
 #define YYERROR goto yyerrlab
@@ -338,50 +381,118 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 28 "expr.y"
-{ printf("%g\n", yyvsp[-1]); }
+#line 42 ".\expr.y"
+{ printf("program -> block\n"); }
+break;
+case 2:
+#line 44 ".\expr.y"
+{ printf("block -> {stmts}\n"); }
+break;
+case 3:
+#line 46 ".\expr.y"
+{ printf("stmts -> {stmts}\n"); }
 break;
 case 4:
-#line 31 "expr.y"
-{ yyerror("前面一行的表达式错误！\n"); successFlag=0; yyerrok; }
+#line 47 ".\expr.y"
+{ printf("stmts -> empty\n"); }
 break;
 case 5:
-#line 33 "expr.y"
-{ yyval = yyvsp[-2] + yyvsp[0];
-                        printf("产生式：expr->expr+expr，%g=%g+%g\n",yyval,yyvsp[-2],yyvsp[0]); }
+#line 49 ".\expr.y"
+{ printf("stmt -> id = expr;\n"); }
 break;
 case 6:
-#line 35 "expr.y"
-{ yyval = yyvsp[-2] - yyvsp[0]; 
-                        printf("产生式：expr->expr-expr，%g=%g-%g\n",yyval,yyvsp[-2],yyvsp[0]); }
+#line 50 ".\expr.y"
+{ printf("stmt -> if (bool) stmt A\n"); }
 break;
 case 7:
-#line 37 "expr.y"
-{ yyval = yyvsp[-2] * yyvsp[0]; 
-                        printf("产生式：expr->expr*expr，%g=%g*%g\n",yyval,yyvsp[-2],yyvsp[0]); }
+#line 51 ".\expr.y"
+{ printf("stmt -> while (bool) stmt\n"); }
 break;
 case 8:
-#line 39 "expr.y"
-{ yyval = yyvsp[-2] / yyvsp[0]; 
-                        printf("产生式：expr->expr/expr，%g=%g/%g\n",yyval,yyvsp[-2],yyvsp[0]); }
+#line 52 ".\expr.y"
+{ printf("stmt -> do stmt while (bool); \n"); }
 break;
 case 9:
-#line 41 "expr.y"
-{ yyval = yyvsp[-1]; 
-                        printf("产生式：expr->(expr)，%g=(%g)\n",yyval,yyvsp[-1]);}
+#line 53 ".\expr.y"
+{ printf("stmt -> break;\n"); }
 break;
 case 10:
-#line 43 "expr.y"
-{ yyval = - yyvsp[0]; 
-                        printf("产生式：expr-> -expr，%g=-%g\n",yyval,yyvsp[0]);}
+#line 54 ".\expr.y"
+{ printf("stmt -> block\n"); }
 break;
 case 11:
-#line 45 "expr.y"
-{ yyval = yyvsp[0];
-                        printf("产生式：expr-> NUMBER，%f=%f\n",yyval,yyvsp[0] ); 
-                        /* "%f"和"%g"都是输出浮点数，"%g"不会输出多余的0, */ }
+#line 56 ".\expr.y"
+{ printf("A -> else stmt\n"); }
 break;
-#line 385 "y.tab.c"
+case 12:
+#line 57 ".\expr.y"
+{ printf("A -> empty\n"); }
+break;
+case 13:
+#line 59 ".\expr.y"
+{ printf("bool -> expr B\n"); }
+break;
+case 14:
+#line 61 ".\expr.y"
+{ printf("B -> relop expr\n"); }
+break;
+case 15:
+#line 62 ".\expr.y"
+{ printf("B -> empty\n"); }
+break;
+case 16:
+#line 64 ".\expr.y"
+{ printf("expr -> term expr1\n"); }
+break;
+case 17:
+#line 66 ".\expr.y"
+{ printf("expr1 -> C expr1\n"); }
+break;
+case 18:
+#line 67 ".\expr.y"
+{ printf("expr1 -> empty\n"); }
+break;
+case 19:
+#line 69 ".\expr.y"
+{ printf("C -> + term\n"); }
+break;
+case 20:
+#line 70 ".\expr.y"
+{ printf("C -> - term\n"); }
+break;
+case 21:
+#line 72 ".\expr.y"
+{ printf("term -> factor term1\n"); }
+break;
+case 22:
+#line 74 ".\expr.y"
+{ printf("term1 -> D term1\n"); }
+break;
+case 23:
+#line 75 ".\expr.y"
+{ printf("term1 -> empty\n"); }
+break;
+case 24:
+#line 77 ".\expr.y"
+{ printf("D -> * factor\n"); }
+break;
+case 25:
+#line 78 ".\expr.y"
+{ printf("D -> / factor\n"); }
+break;
+case 26:
+#line 80 ".\expr.y"
+{ printf("factor -> (expr)\n"); }
+break;
+case 27:
+#line 81 ".\expr.y"
+{ printf("factor -> id\n"); }
+break;
+case 28:
+#line 82 ".\expr.y"
+{ printf("factor -> num\n"); }
+break;
+#line 496 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;

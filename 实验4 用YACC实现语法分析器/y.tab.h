@@ -1,2 +1,15 @@
 #define NUMBER 257
-#define UMINUS 258
+#define ID_TKN 258
+#define RELOP_TKN 259
+#define RELOP_LT 260
+#define RELOP_LE 261
+#define RELOP_EQ 262
+#define RELOP_NE 263
+#define RELOP_GT 264
+#define RELOP_GE 265
+#define IF_TKN 266
+#define ELSE_TKN 267
+#define BREAK_TKN 268
+#define WHILE_TKN 269
+#define DO_TKN 270
+#define UMINUS 271
