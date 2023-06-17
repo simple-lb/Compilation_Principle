@@ -287,7 +287,13 @@ void PrintConstList(void)
 #define OFloatToBool     1059
 #define OBoolToChar      1060
 #define OBoolToInt       1061
-#define OBoolToFloat     1062 
+#define OBoolToFloat     1062
+
+#define HALT             	1063
+
+/* 取反 */
+#define OIntUminus			1071
+#define OFloatUminus		1072
 
 /*四元式数据结构*/
 struct Quadruple {
@@ -329,8 +335,9 @@ void DestroyQuadTable( void )
 
 /*当Arg1是变量或临时变量时，Arg1Name是该变量的名称,用于演示时使用，其余参数类同 */
 int Gen( int Op, int Arg1, int Arg2, int Arg3, char *Arg1Name, char *Arg2Name, char *Arg3Name )
-{ struct Quadruple * ptr; 
-  int incr = 100;
+{ 
+    struct Quadruple * ptr; 
+    int incr = 100;
     if( QuadTable.len >= QuadTable.size ) {
         ptr = realloc( QuadTable.base, QuadTable.size+incr );
         if( ptr==NULL ) return -1;
@@ -352,58 +359,111 @@ int Gen( int Op, int Arg1, int Arg2, int Arg3, char *Arg1Name, char *Arg2Name, c
 
 /*把四元式所对应的三地址代码写入到文件中*/
 void WriteQuadTableToFile( const char * FileName )
-{FILE * fp;
-struct Quadruple * ptr;
-int i,op;
-char str[1000],ch;
+{
+    FILE * fp;
+    struct Quadruple * ptr;
+    int i,op;
+    char str[1000],ch;
     fp = fopen( FileName, "w" );
     if( fp==NULL ) return;
     for( i=0, ptr = QuadTable.base; i < QuadTable.len; i++,ptr++ ) {
         fprintf(fp, "%5d:  ", QuadTable.startaddr + i);
+        printf("%5d:  ", QuadTable.startaddr + i);
         op = ptr->op;
         switch( op ) {
-            case OIntAdd        :
-            case OIntSub        :
-            case OIntMultiply   :
-            case OIntDivide     :
-            case OFloatAdd      :
-            case OFloatSub      :
-            case OFloatMultiply :
-            case OFloatDivide   : if( op==OIntAdd || op==OFloatAdd) ch = '+';
-                                  if( op==OIntSub || op==OFloatSub) ch = '-';
-                                  if( op==OIntMultiply || op==OFloatMultiply) ch = '*';
-                                  if( op==OIntDivide || op==OFloatDivide) ch = '/';
-                                  sprintf(str,"[%d] = [%d] %c [%d]", ptr->arg3, ptr->arg1, ch, ptr->arg2);
-                                  break;
-            case OIntEvaluation   :
-            case OFloatEvaluation :
-            case OCharEvaluation  :
-            case OBoolEvaluation  : sprintf(str,"[%d] = [%d]", ptr->arg3, ptr->arg1);
-                                    break;
-            case OGoto            : sprintf(str,"Goto %d", ptr->arg3);
-                                    break;
-            case OGTGoto  : sprintf(str,"if [%d]>[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  break;
-            case OGEGoto  : sprintf(str,"if [%d]>=[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case OLTGoto  : sprintf(str,"if [%d]<[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  break;
-            case OLEGoto  : sprintf(str,"if [%d]<=[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case OEQGoto  : sprintf(str,"if [%d]==[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case ONEQGoto : sprintf(str,"if [%d]<>[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
+            case OIntAdd: 
+         	case OIntSub: 
+         	case OIntMultiply: 
+         	case OIntDivide:
+            case OFloatAdd: 
+            case OFloatSub: 
+            case OFloatMultiply: 
+            case OFloatDivide:
+           		if(op == OIntAdd || op == OFloatAdd) ch = '+';
+           		if(op == OIntSub || op == OFloatSub) ch = '-';
+           		if(op == OIntMultiply || op == OFloatMultiply) ch = '*';
+           		if(op == OIntDivide || op == OFloatDivide) ch = '/';
+                sprintf(str, "[%d] = [%d] %c [%d]", ptr->arg3, ptr->arg1, ch, ptr->arg2);
+				printf("%s = %s %c %s\n", ptr->arg3name, ptr->arg1name, ch, ptr->arg2name);
+                break;
 
-            case OCharToInt   : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
-            case OCharToFloat : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
-            case OIntToFloat  : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
-            case OIntToChar   : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToChar : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToInt  : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
+            case OIntEvaluation:
+            case OFloatEvaluation:
+            case OCharEvaluation:
+            case OBoolEvaluation:
+            	sprintf(str, "[%d] = [%d]", ptr->arg3, ptr->arg1);
+				printf("%s = %s\n", ptr->arg3name, ptr->arg1name);
+                break;
 
-            case OCharToBool   : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OIntToBool    : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToBool  : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OBoolToChar   : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OBoolToInt    : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
-            case OBoolToFloat  : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
+            case OIntUminus:
+            case OFloatUminus: 
+            	sprintf(str, "[%d] = - [%d]", ptr->arg3, ptr->arg1);
+            	printf("%s = %s\n", ptr->arg3name, ptr->arg1name);
+                break;
 
-            default: yyerror("程序错误：出现不认识的运算符！"); strcpy(str, "error: Unknown operator");break;
+            case OGoto:
+				sprintf(str, "Goto %d", ptr->arg3);
+				printf("Goto %d\n", ptr->arg3);
+                break;
+
+            case OLTGoto: 
+				sprintf(str, "if [%d] < [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s < %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OLEGoto: 
+				sprintf(str, "if [%d] <= [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s <= %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OGTGoto: 
+				sprintf(str, "if [%d] > [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s > %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OGEGoto: 
+				sprintf(str, "if [%d] >= [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s >= %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break;
+			case OEQGoto: 
+				sprintf(str, "if [%d] == [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s == %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case ONEQGoto: 
+				sprintf(str, "if [%d] != [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s != %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+
+            case OCharToBool:
+            case OIntToBool:
+            case OFloatToBool:
+            	sprintf( str,"[%d] = (bool) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (bool) %s\n", ptr->arg3name, ptr->arg1name);  
+				break;
+			case OBoolToChar:
+            case OIntToChar:
+            case OFloatToChar:
+            	sprintf( str,"[%d] = (char) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (char) %s\n", ptr->arg3name, ptr->arg1name);  
+				break; 
+			case OBoolToInt:
+            case OCharToInt:
+            case OFloatToInt:
+            	sprintf( str,"[%d] = (int) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (int) %s\n", ptr->arg3name, ptr->arg1name);  
+				break;
+			case OBoolToFloat:
+            case OCharToFloat:
+            case OIntToFloat:
+            	sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (float) %s\n", ptr->arg3name, ptr->arg1name);  
+				break; 
+
+			case HALT : 
+				sprintf(str, "HALT"); 
+				printf("HALT\n");
+				break;
+
+            default:
+            	yyerror("程序错误：出现不认识的运算符！"); 
+                strcpy(str, "error: Unknown operator");break;
         }
         fprintf(fp,"%s\n",str);
     }
@@ -413,6 +473,90 @@ char str[1000],ch;
 
 /********************************上面:四元式的定义和函数****************************/
 
+
+/********************************下面:定义类型检查相关函数****************************/
+
+int typeMax(int type1, int type2)
+{
+	return type1 > type2 ? type1 : type2;
+}
+
+int typeWiden(int addr, int type, char name[], int wideType, char tmpName[], SymbolList TopSymbolList)
+{
+	if(type == wideType) {
+		return addr;
+	} else {
+		int op;
+		int tmpWidth;
+		int tmpAddr;
+		if(type == BOOL && wideType == CHAR) {
+			op = OBoolToChar;
+			tmpWidth = CHAR_WIDTH;
+		} else if(type == BOOL && wideType == INT) {
+			op = OBoolToInt;
+			tmpWidth = INT_WIDTH;
+		} else if(type == BOOL && wideType == FLOAT) {
+			op = OBoolToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		} else if(type == CHAR && wideType == INT) {
+			op = OCharToInt;
+			tmpWidth = INT_WIDTH;
+		} else if(type == CHAR && wideType == FLOAT) {
+			op = OCharToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		} else if(type == INT && wideType == FLOAT) {
+			op = OIntToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		}
+		tmpAddr = NewTemp(TopSymbolList, tmpName, tmpWidth);
+		Gen(op, addr, 0, tmpAddr, name, "", tmpName);
+
+		return tmpAddr;
+	}
+}
+
+/********************************上面:定义类型检查相关函数****************************/
+
+
+/******************************下面:定义回填相关变量和函数*******************************************/
+// 采用链表存储
+struct backlist{
+     int backaddr;// 用来表示回填数据地址
+     struct backlist *next ; 
+};
+
+struct backlist * makelist(int i)
+{
+    struct backlist *x  = (struct  backlist *)malloc( sizeof( struct backlist)) ; 
+	x->backaddr = i ; 
+    x->next = NULL;
+	return x;
+}
+
+struct backlist *  merge(struct backlist * p1 , struct backlist *p2 )
+{
+       struct backlist * tail = p1;
+       while( tail->next != NULL){
+	        tail = tail->next; 
+	   }	   
+	   tail->next = p2;
+       return p1; 	  //将数据合并到p1 中	   
+}
+
+void backpatch(struct backlist *p , int instr)
+{
+     // 回填数据
+	struct backlist *temp;
+    temp = p;
+	QuadTable.base[temp->backaddr-QuadTable.startaddr].arg3 = instr; 
+	while(temp->next != NULL) {
+	   temp = temp->next;
+	   QuadTable.base[temp->backaddr-QuadTable.startaddr]. arg3 = instr; //循环回填列表
+	}
+}
+
+
+/******************************上面:定义回填相关变量和函数*******************************************/
 
 
 /**************下面:定义句法分析栈中元素的信息，即终结符和非终结符的综合属性****************/
@@ -441,10 +585,16 @@ char str[1000],ch;
 	   int type;
 	   int addr;
 	   int width;
-	} factor, term, expr;/*非终结符factor, term, expr的综合属性*/
+       struct backlist * truelist;
+	   struct backlist * falselist;
+	   struct backlist * nextlist;
+	   struct backlist * breaklist;// 用于存放break的回填的地址
+	} factor, term, expr, unary, rel, equality, join, bool, N, stmt, stmts, block;/*非终结符factor, term, expr, unary, rel, equality, join, bool, N, stmt, stmts, block的综合属性*/
         /*其它文法符号的属性记录可以在下面继续添加*/
 
-
+    struct {
+	   int instr;// 下一条指令的序号，即QuadTable.len + QuadTable.startaddr  
+	} M;
 } ;
 
 #define YYSTYPE union ParseStackNodeInfo 
@@ -487,151 +637,700 @@ char str[1000],ch;
 %right '!' UMINUS
 
 %%
-program : block                                 { printf("产生式：program->block\n"); } 
+program : block
+        { 
+            printf("产生式：program->block\n"); 
+
+            if($1.block.nextlist != NULL) {
+				backpatch($1.block.nextlist, QuadTable.startaddr + QuadTable.len);
+		  	}
+		  	Gen(HALT, 0, 0, 0, "", "", "");
+        } 
         ;
 
-block   : '{' blockM1 decls stmts blockM2 '}'   { printf("产生式：block->{decls stmts}\n"); } 
+block   : '{' blockM1 decls stmts blockM2 '}'
+        { 
+            printf("产生式：block->{decls stmts}\n"); 
+
+            $$.block.nextlist = $4.stmts.nextlist;
+        } 
         ;
 
-blockM1 :                     { TopSymbolList = CreateSymbolList( TopSymbolList, TopSymbolList->endaddr ); }
+blockM1 :                    
+        { 
+            TopSymbolList = CreateSymbolList( TopSymbolList, TopSymbolList->endaddr ); 
+        }
         ;
 
-blockM2 :                     { SymbolList env;
-                                 PrintSymbolList( TopSymbolList); 
-                                 env = TopSymbolList->prev;
-                                 DestroySymbolList( TopSymbolList ); 
-                                 TopSymbolList = env;                 
-                              }
+blockM2 :                     
+        { 
+            SymbolList env;
+            PrintSymbolList( TopSymbolList); 
+            env = TopSymbolList->prev;
+            DestroySymbolList( TopSymbolList ); 
+            TopSymbolList = env;                 
+        }
 		;
 
-decls   : decls decl          { printf("产生式：decls->decls decl\n"); }
-        |                     { printf("产生式：decls->null\n"); }
+decls   : decls decl          
+        { 
+            printf("产生式：decls->decls decl\n"); 
+        }
+        |                     
+        { 
+            printf("产生式：decls->null\n"); 
+        }
         ;
 
-decl    : type ID ';'         { int width;
+decl    : type ID ';'         
+        { 
+            int width;
                                 
-                                printf("产生式：decl->type ID; ID=%s\n",$2.id.name); 
-                                
-								switch( $1.basic.type ) {
-                                    case CHAR  : width = CHAR_WIDTH;  break;
-                                    case INT   : width = INT_WIDTH;   break;
-                                    case FLOAT : width = FLOAT_WIDTH; break;
-                                    case BOOL  : width = BOOL_WIDTH;  break;
-                                    default    : width = -1; break;
-                                }
-                                AddToSymbolList( TopSymbolList, $2.id.name, $1.basic.type, width );
+            printf("产生式：decl->type ID; ID=%s\n",$2.id.name); 
+            
+            switch( $1.basic.type ) {
+                case CHAR  : width = CHAR_WIDTH;  break;
+                case INT   : width = INT_WIDTH;   break;
+                case FLOAT : width = FLOAT_WIDTH; break;
+                case BOOL  : width = BOOL_WIDTH;  break;
+                default    : width = -1; break;
+            }
+            AddToSymbolList( TopSymbolList, $2.id.name, $1.basic.type, width );
 
-                              }
+        }
 		;
 
-type    : BASIC               { printf("产生式：type->BASIC\n"); $$.basic.type = $1.basic.type; }
+type    : BASIC               
+        { 
+            printf("产生式：type->BASIC\n"); 
+            
+            $$.basic.type = $1.basic.type;
+        }
         ;
 
-stmts   : stmts stmt    {printf("产生式：stmts->stmts stmt\n");}
-        | /*empty*/     {printf("产生式：stmts->null\n");}
+stmts   : stmts M stmt    
+        {
+            printf("产生式：stmts->stmts stmt\n");
+
+            if( $1.stmts.nextlist  != NULL) {
+				backpatch($1.stmts.nextlist, $2.M.instr) ;
+			}
+			$$.stmts.nextlist = $3.stmt.nextlist;
+        }
+        
+        | /*empty*/     
+        {
+            printf("产生式：stmts->null\n");
+        }
         ;
 
-stmt    : ID '=' expr ';'                  { printf("产生式：stmt->id = expr;\n"); }
-        | IF '(' bool ')' stmt             { printf("产生式：stmt->if (bool) stmt\n");}
-        | IF '(' bool ')' stmt ELSE stmt   { printf("产生式：stmt->if (bool) stmt esle stmt\n"); }
-        | WHILE '(' bool ')' stmt          { printf("产生式：stmt->while (bool) stmt\n"); }
-        | DO stmt WHILE '(' bool ')' ';'   { printf("产生式：stmt->do stmt while (bool)\n"); }
-        | BREAK  ';'                       { printf("产生式：stmt->break ;\n"); }
-        | block                            { printf("产生式：stmt->block\n"); }
+stmt    : ID '=' expr ';'                  
+        { 
+            printf("产生式：stmt->id = expr;\n"); 
+            
+            struct SymbolElem * p;
+			p = LookUpAllSymbolList(TopSymbolList, $1.id.name );
+      		if(p != NULL) {
+                if (p->type == $3.expr.type) {
+                    switch (p->type) {
+                        case BOOL   : Gen(OBoolEvaluation , $3.expr.addr, 0, p->addr, $3.expr.str, "",  p->name);   break;
+                        case CHAR   : Gen(OCharEvaluation , $3.expr.addr, 0, p->addr, $3.expr.str, "",  p->name);   break;
+                        case INT    : Gen(OIntEvaluation , $3.expr.addr, 0, p->addr, $3.expr.str, "",  p->name);    break;
+                        case FLOAT  : Gen(OFloatEvaluation , $3.expr.addr, 0, p->addr, $3.expr.str, "",  p->name);  break;
+                        default: yyerror("变量类型非法");
+                    }
+                } else {
+                    int op;
+                    char tmpName[10];
+                    int tmpWidth;
+                    int tmpAddr;
+
+                    if(p->type == BOOL) {
+                        tmpWidth = BOOL_WIDTH;
+                        switch ($3.expr.type) {
+                            case CHAR : op = OCharToBool;   break;
+                            case INT  : op = OIntToBool;    break;
+                            case FLOAT: op = OFloatToBool;  break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == CHAR) {
+                        tmpWidth = CHAR_WIDTH;
+                        switch ($3.expr.type) {
+                            case BOOL : op = OBoolToChar;   break;
+                            case INT  : op = OIntToChar;    break;
+                            case FLOAT: op = OFloatToChar;  break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == INT) {
+                        tmpWidth = INT_WIDTH; 
+                        switch ($3.expr.type) {
+                            case BOOL : op = OBoolToInt;    break;
+                            case CHAR : op = OCharToInt;    break;
+                            case FLOAT: op = OFloatToInt;   break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == FLOAT) {
+                        tmpWidth = FLOAT_WIDTH;
+                        switch ($3.expr.type) {
+                            case BOOL : op = OBoolToFloat;  break;
+                            case CHAR : op = OCharToFloat;  break;
+                            case INT  : op = OIntToFloat;   break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else{
+                        yyerror("变量非法类型");
+                    } 
+                    tmpAddr = NewTemp(TopSymbolList, tmpName, tmpWidth);
+                    Gen(op, $3.expr.addr, 0, tmpAddr, $3.expr.str, "", tmpName);
+
+                    switch (p->type) {
+                        case BOOL : Gen(OBoolEvaluation , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case CHAR : Gen(OCharEvaluation , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case INT  : Gen(OIntEvaluation  , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case FLOAT: Gen(OFloatEvaluation, tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        default: yyerror("变量类型非法");
+                    }
+                }
+			} else {
+				yyerror( "变量名没有定义" );
+				strcpy( $$.factor.str, "no_id_defined" ); /*容错处理*/
+				$$.factor.type = INT;
+				$$.factor.addr = -1;
+				$$.factor.width = INT_WIDTH;						
+			 
+				Gen(OIntEvaluation , $3.expr.addr, 0, p->addr, $3.expr.str, "",  p->name);  
+				$$.stmt.nextlist = NULL; 
+        	}
+        }
+
+        | IF '(' bool ')' M stmt             
+        { 
+            printf("产生式：stmt->if (bool) stmt\n");
+
+            backpatch($3.bool.truelist, $5.M.instr);
+			$$.stmt.nextlist = merge($3.bool.falselist, $6.stmt.nextlist);
+        }
+
+        | IF '(' bool ')' M stmt ELSE N M stmt   
+        { 
+            printf("产生式：stmt->if (bool) stmt esle stmt\n"); 
+            
+            backpatch($3.bool.truelist, $5.M.instr);
+			backpatch($3.bool.falselist, $9.M.instr);
+			struct backlist *temp ;
+			temp = merge($8.N.nextlist, $6.stmt.nextlist);
+			$$.stmt.nextlist = merge(temp, $10.stmt.nextlist);
+        }
+
+        | WHILE M '(' bool ')' M stmt          
+        { 
+            printf("产生式：stmt->while (bool) stmt\n"); 
+            
+            backpatch($7.stmt.nextlist, $2.M.instr);
+			backpatch($4.bool.truelist, $6.M.instr);
+			$$.stmt.nextlist = $4.bool.falselist;
+			Gen(OGoto, 0, 0, $2.M.instr, "", "", "");
+        }
+
+        | DO M stmt WHILE '(' bool ')' ';'   
+        { 
+            printf("产生式：stmt->do stmt while (bool)\n"); 
+            
+            backpatch($6.bool.truelist, $2.M.instr);
+            $$.stmt.nextlist = $6.bool.falselist;
+        }
+        
+        | BREAK  ';'                       
+        { 
+            printf("产生式：stmt->break ;\n"); 
+        }
+
+        | block                            
+        { 
+            printf("产生式：stmt->block\n"); 
+        
+            $$.stmt.nextlist = $1.block.nextlist;
+        }
         ;
 
-bool  :   bool OR join                     { printf("产生式：bool->bool || join\n"); }
-        | join                             { printf("产生式：bool->join\n"); }  
+bool    : bool OR M join                     
+        { 
+            printf("产生式：bool->bool || join\n"); 
+            
+            strcpy($$.bool.str, "");
+			$$.bool.type = 0;
+			$$.bool.addr = 0;
+			$$.bool.width = 0;  
+			backpatch($1.bool.falselist, $3.M.instr);
+			$$.bool.truelist = merge($1.bool.truelist, $4.join.truelist);
+			$$.bool.falselist = $4.join.falselist;
+        }
+
+        |  join                             
+        { 
+            printf("产生式：bool->join\n"); 
+            
+            strcpy( $$.bool.str, $1.join.str );
+			$$.bool.type = $1.join.type;
+			$$.bool.addr = $1.join.addr;
+			$$.bool.width = $1.join.width;
+			$$.bool.truelist = $1.join.truelist;
+			$$.bool.falselist = $1.join.falselist;    
+        }  
 		;
 
-join  :   join AND equality                { printf("产生式：join->join && equality\n"); } 
-        | equality                         { printf("产生式：join->equality\n"); } 
+join    :  join AND M equality                
+        { 
+            printf("产生式：join->join && equality\n"); 
+        
+            strcpy($$.join.str, "");
+			$$.join.type = 0;
+			$$.join.addr = 0;
+			$$.join.width = 0;  
+            backpatch($1.join.truelist, $3.M.instr);
+			$$.join.truelist = $4.equality.truelist;
+			$$.join.falselist = merge($1.join.falselist, $4.equality.falselist);
+        } 
+
+        |  equality                         
+        { 
+            printf("产生式：join->equality\n"); 
+        
+            strcpy($$.join.str, $1.equality.str);
+			$$.join.type = $1.equality.type;	
+			$$.join.addr = $1.equality.addr;
+		  	$$.join.width = $1.equality.width;
+			$$.join.truelist = $1.equality.truelist;
+			$$.join.falselist = $1.equality.falselist;
+        } 
         ;
 
-equality : equality RELOP_EQ  rel          { printf("产生式：equality->equality == rel\n"); }
-        |  equality RELOP_NEQ rel          { printf("产生式：equality->equality != rel\n"); }
-        |  rel                             { printf("产生式：equality->rel\n"); }
-		;
- 
-rel   :  expr RELOP_LT expr   { printf("产生式：rel -> expr < expr\n"); }
-      |  expr RELOP_LE expr   { printf("产生式：rel -> expr <= expr\n"); }
-      |  expr RELOP_GT expr   { printf("产生式：rel -> expr > expr\n"); }
-      |  expr RELOP_GE expr   { printf("产生式：rel -> expr >= expr\n"); }
-      |  expr                 { printf("产生式：rel -> expr\n"); }
-      ;
+equality: equality RELOP_EQ rel
+        {
+            printf("产生式：equality -> equality == rel\n");
+
+            strcpy($$.equality.str, "");
+			$$.equality.type = 0;
+			$$.equality.addr = 0;
+			$$.equality.width = 0;
+			$$.equality.truelist = makelist(QuadTable.len + QuadTable.startaddr);	
+			$$.equality.falselist = makelist(QuadTable.len + QuadTable.startaddr + 1);	
+			Gen(OEQGoto, $1.equality.addr, $3.rel.addr, 0, $1.equality.str, $3.rel.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+
+        | equality RELOP_NEQ rel
+        {
+            printf("产生式：equality -> equality != rel\n");
+
+            strcpy($$.equality.str, "");
+            $$.equality.type = 0;
+			$$.equality.addr = 0;
+			$$.equality.width = 0;
+			$$.equality.truelist = makelist(QuadTable.len + QuadTable.startaddr);	
+			$$.equality.falselist = makelist(QuadTable.len + QuadTable.startaddr + 1);	
+			Gen(ONEQGoto, $1.equality.addr, $3.rel.addr, 0, $1.equality.str, $3.rel.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+
+        | rel
+        {
+            printf("产生式：equality -> rel\n");
+
+            strcpy($$.equality.str, $1.rel.str);
+			$$.equality.type = $1.rel.type;
+			$$.equality.addr = $1.rel.addr;
+		  	$$.equality.width = $1.rel.width;
+			$$.equality.truelist = $1.rel.truelist;
+			$$.equality.falselist = $1.rel.falselist;
+        }
+        ;
+
+rel     : expr RELOP_LT expr   
+		{
+            printf("产生式：rel -> expr < expr\n");
+
+            strcpy($$.rel.str, "");
+            $$.rel.type = 0;
+			$$.rel.addr = 0;
+			$$.rel.width = 0;
+			$$.rel.truelist =  makelist(QuadTable.startaddr + QuadTable.len);	
+			$$.rel.falselist =  makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OLTGoto, $1.expr.addr, $3.expr.addr , 0 , $1.expr.str, $3.expr.str, "_") ;
+			Gen(OGoto, 0, 0, 0, "", "", "_");
+		}
+
+        | expr RELOP_LE expr   
+        {
+            printf("产生式：rel -> expr <= expr\n");
+
+            strcpy($$.rel.str, "");
+            $$.rel.type = 0;
+			$$.rel.addr = 0;
+			$$.rel.width = 0;
+            $$.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			$$.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OLEGoto, $1.expr.addr, $3.expr.addr, 0, $1.expr.str, $3.expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+
+        | expr RELOP_GT expr   
+        {
+            printf("产生式：rel -> expr > expr\n");
+
+            strcpy($$.rel.str, "");
+            $$.rel.type = 0;
+			$$.rel.addr = 0;
+			$$.rel.width = 0;
+            $$.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			$$.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OGTGoto, $1.expr.addr, $3.expr.addr, 0, $1.expr.str, $3.expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+
+        | expr RELOP_GE expr   
+        {
+            printf("产生式：rel -> expr >= expr\n");
+
+            strcpy($$.rel.str, "");
+            $$.rel.type = 0;
+			$$.rel.addr = 0;
+			$$.rel.width = 0;
+            $$.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			$$.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OGEGoto, $1.expr.addr, $3.expr.addr, 0, $1.expr.str, $3.expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+
+        | expr                 
+		{ 	
+            printf("产生式：rel -> expr\n"); 
+	  		
+			strcpy($$.rel.str,$1.expr.str);
+			$$.rel.type = $1.expr.type;
+			$$.rel.addr = $1.expr.addr;
+			$$.rel.width = $1.expr.width;
+			$$.rel.truelist = NULL;
+			$$.rel.falselist = NULL;
+ 	 	}
+        ;
+
+M       : /* epsilon */
+        {
+            $$.M.instr = QuadTable.startaddr + QuadTable.len;
+        }
+        ;
+
+N       : /* epsilon */     
+        {
+            $$.N.nextlist = makelist(QuadTable.len + QuadTable.startaddr);  
+            Gen(OGoto, 0, 0, 0, "", "", "");
+        }
+        ;
 
 
-
-expr  : expr  '+' term    { printf("产生式：expr->expr + term\n"); 
+expr    : expr  '+' term    
+        { 
+            printf("产生式：expr->expr + term\n"); 
                            
-						   }
+            $$.expr.type = typeMax($1.expr.type, $3.term.type);
+			switch ($$.expr.type) {
+				case BOOL 	: $$.expr.width = BOOL_WIDTH; break;
+				case CHAR	: $$.expr.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: $$.expr.width = INT_WIDTH; break;
+				case FLOAT 	: $$.expr.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			$$.expr.addr = NewTemp(TopSymbolList, $$.expr.str, $$.expr.width);
+			if($1.expr.type == $3.term.type) {
+				if ($1.expr.type == INT) {
+					Gen(OIntAdd, $1.expr.addr, $3.term.addr, $$.expr.addr, $1.expr.str, $3.term.str, $$.expr.str); 
+				} else if ($1.expr.type == FLOAT) {
+					Gen(OFloatAdd, $1.expr.addr, $3.term.addr, $$.expr.addr, $1.expr.str, $3.term.str, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if($1.expr.type > $3.term.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($3.term.addr, $3.term.type, $3.term.str, $1.expr.type, tmpName, TopSymbolList);
+				if($1.expr.type == INT) {
+					Gen(OIntAdd, $1.expr.addr, tmpAddr, $$.expr.addr, $1.expr.str, tmpName, $$.expr.str);	
+				} else if($1.expr.type == FLOAT) {
+					Gen(OFloatAdd, $1.expr.addr, tmpAddr, $$.expr.addr, $1.expr.str, tmpName, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($1.expr.addr, $1.expr.type, $1.expr.str, $3.term.type, tmpName, TopSymbolList);
+				if($3.term.type == INT) {
+					Gen(OIntAdd, tmpAddr, $3.term.addr, $$.expr.addr, tmpName, $3.term.str, $$.expr.str);
+				} else if($3.term.type == FLOAT) {
+					Gen(OFloatAdd, tmpAddr, $3.term.addr, $$.expr.addr, tmpName, $3.term.str, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			$$.expr.truelist = NULL;
+			$$.expr.falselist = NULL;
+        }
 
-      | expr  '-' term    { printf("产生式：expr->expr - term\n"); 
+        | expr  '-' term    
+        { 
+            printf("产生式：expr->expr - term\n"); 
 	  
-	  
-	                      }
+            $$.expr.type = typeMax($1.expr.type, $3.term.type);
+			switch ($$.expr.type) {
+				case BOOL 	: $$.expr.width = BOOL_WIDTH; break;
+				case CHAR	: $$.expr.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: $$.expr.width = INT_WIDTH; break;
+				case FLOAT 	: $$.expr.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			$$.expr.addr = NewTemp(TopSymbolList, $$.expr.str, $$.expr.width);
+			if($1.expr.type == $3.term.type) {
+				if ($1.expr.type == INT) {
+					Gen(OIntSub, $1.expr.addr, $3.term.addr, $$.expr.addr, $1.expr.str, $3.term.str, $$.expr.str); 
+				} else if ($1.expr.type == FLOAT) {
+					Gen(OFloatSub, $1.expr.addr, $3.term.addr, $$.expr.addr, $1.expr.str, $3.term.str, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if($1.expr.type > $3.term.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($3.term.addr, $3.term.type, $3.term.str, $1.expr.type, tmpName, TopSymbolList);
+				if($1.expr.type == INT) {
+					Gen(OIntSub, $1.expr.addr, tmpAddr, $$.expr.addr, $1.expr.str, tmpName, $$.expr.str);	
+				} else if($1.expr.type == FLOAT) {
+					Gen(OFloatSub, $1.expr.addr, tmpAddr, $$.expr.addr, $1.expr.str, tmpName, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($1.expr.addr, $1.expr.type, $1.expr.str, $3.term.type, tmpName, TopSymbolList);
+				if($3.term.type == INT) {
+					Gen(OIntSub, tmpAddr, $3.term.addr, $$.expr.addr, tmpName, $3.term.str, $$.expr.str);
+				} else if($3.term.type == FLOAT) {
+					Gen(OFloatSub, tmpAddr, $3.term.addr, $$.expr.addr, tmpName, $3.term.str, $$.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			$$.expr.truelist = NULL;
+			$$.expr.falselist = NULL;
+	    }
  
-      | term              { printf("产生式：expr->term\n");
-							strcpy( $$.expr.str, $1.term.str );
-							$$.expr.type = $1.term.type;
-							$$.expr.addr = $1.term.addr;
-							$$.expr.width = $1.term.width;	
+        | term              
+        { 
+            printf("产生式：expr->term\n");
+
+            strcpy($$.expr.str, $1.term.str);
+		  	$$.expr.type = $1.term.type;
+			$$.expr.addr = $1.term.addr;
+		 	$$.expr.width = $1.term.width;
+			$$.expr.truelist = $1.term.truelist;
+			$$.expr.falselist = $1.term.falselist;
 	  
-	                      }
-      ;
+	    }
+        ;
 
-term  : term  '*' factor  { printf("产生式：term->term*factor\n"); }
+term    : term  '*' unary  
+        { 
+            printf("产生式：term->term*unary\n"); 
+            
+            $$.term.type = typeMax($1.term.type, $3.unary.type);
+			switch ($$.term.type) {
+				case BOOL 	: $$.term.width = BOOL_WIDTH; break;
+				case CHAR	: $$.term.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: $$.term.width = INT_WIDTH; break;
+				case FLOAT 	: $$.term.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			$$.term.addr = NewTemp(TopSymbolList, $$.term.str, $$.term.width);
+			if($1.term.type == $3.unary.type) {
+				if ($1.term.type == INT) {
+					Gen(OIntMultiply, $1.term.addr, $3.unary.addr, $$.term.addr, $1.term.str, $3.unary.str, $$.term.str); 
+				} else if ($1.term.type == FLOAT) {
+					Gen(OFloatMultiply, $1.term.addr, $3.unary.addr, $$.term.addr, $1.term.str, $3.unary.str, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if($1.term.type > $3.unary.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($3.unary.addr, $3.unary.type, $3.unary.str, $1.term.type, tmpName, TopSymbolList);
+				if($1.term.type == INT) {
+					Gen(OIntMultiply, $1.term.addr, tmpAddr, $$.term.addr, $1.term.str, tmpName, $$.term.str);	
+				} else if($1.term.type == FLOAT) {
+					Gen(OFloatMultiply, $1.term.addr, tmpAddr, $$.term.addr, $1.term.str, tmpName, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($1.term.addr, $1.term.type, $1.term.str, $3.unary.type, tmpName, TopSymbolList);
+				if($3.unary.type == INT) {
+					Gen(OIntMultiply, tmpAddr, $3.unary.addr, $$.term.addr, tmpName, $3.unary.str, $$.term.str);
+				} else if($3.unary.type == FLOAT) {
+					Gen(OFloatMultiply, tmpAddr, $3.unary.addr, $$.term.addr, tmpName, $3.unary.str, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			$$.term.truelist = NULL;
+			$$.term.falselist = NULL;    
+        }
 
-      | term  '/' factor  { printf("产生式：term->term/factor\n"); }
+        | term  '/' unary 
+        { 
+            printf("产生式：term->term/unary\n"); 
+        
+            $$.term.type = typeMax($1.term.type, $3.unary.type);
+			switch ($$.term.type) {
+				case BOOL 	: $$.term.width = BOOL_WIDTH; break;
+				case CHAR	: $$.term.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: $$.term.width = INT_WIDTH; break;
+				case FLOAT 	: $$.term.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			$$.term.addr = NewTemp(TopSymbolList, $$.term.str, $$.term.width);
+			if($1.term.type == $3.unary.type) {
+				if ($1.term.type == INT) {
+					Gen(OIntDivide, $1.term.addr, $3.unary.addr, $$.term.addr, $1.term.str, $3.unary.str, $$.term.str); 
+				} else if ($1.term.type == FLOAT) {
+					Gen(OFloatDivide, $1.term.addr, $3.unary.addr, $$.term.addr, $1.term.str, $3.unary.str, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if($1.term.type > $3.unary.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($3.unary.addr, $3.unary.type, $3.unary.str, $1.term.type, tmpName, TopSymbolList);
+				if($1.term.type == INT) {
+					Gen(OIntDivide, $1.term.addr, tmpAddr, $$.term.addr, $1.term.str, tmpName, $$.term.str);	
+				} else if($1.term.type == FLOAT) {
+					Gen(OFloatDivide, $1.term.addr, tmpAddr, $$.term.addr, $1.term.str, tmpName, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden($1.term.addr, $1.term.type, $1.term.str, $3.unary.type, tmpName, TopSymbolList);
+				if($3.unary.type == INT) {
+					Gen(OIntDivide, tmpAddr, $3.unary.addr, $$.term.addr, tmpName, $3.unary.str, $$.term.str);
+				} else if($3.unary.type == FLOAT) {
+					Gen(OFloatDivide, tmpAddr, $3.unary.addr, $$.term.addr, tmpName, $3.unary.str, $$.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			$$.term.truelist = NULL;
+			$$.term.falselist = NULL;
+        }
 
-      | factor            { printf("产生式：term->factor\n");
-							strcpy( $$.term.str, $1.factor.str );
-							$$.term.type = $1.factor.type;
-							$$.term.addr = $1.factor.addr;
-							$$.term.width = $1.factor.width;	
-	                      }
-      ;
+        | unary            
+        { 
+            printf("产生式：term->unary\n");
+            
+            strcpy($$.term.str, $1.unary.str);
+			$$.term.type = $1.unary.type;	
+			$$.term.addr = $1.unary.addr;
+			$$.term.width = $1.unary.width;
+			$$.term.truelist = $1.unary.truelist;
+			$$.term.falselist = $1.unary.falselist;
+        }
+        ;
 
-factor: '(' expr ')'      { printf("产生式：factor->(expr)\n" );
-							strcpy( $$.factor.str, $2.expr.str );
-							$$.factor.type  = $2.expr.type;
-							$$.factor.addr  = $2.expr.addr;
-							$$.factor.width = $2.expr.width;
-                          }
+unary   : '!' unary
+        {
+            printf("产生式：unary -> !unary\n");
+            strcpy($$.unary.str, $2.unary.str);
+			$$.unary.type = $2.unary.type;
+			$$.unary.addr = $2.unary.addr;
+		  	$$.unary.width = $2.unary.width;
+			$$.unary.truelist = $2.unary.falselist;
+			$$.unary.falselist = $2.unary.truelist;
+        }
 
-      | ID                { 
-	                        struct SymbolElem * p;
-							printf("产生式：factor->id\n"); 
-							p = LookUpAllSymbolList( TopSymbolList, $1.id.name );
-							if( p != NULL ) {
-								strcpy( $$.factor.str, p->name );
-								$$.factor.type  = p->type;
-								$$.factor.addr  = p->addr;
-								$$.factor.width = p->width;
-							}							    
-							else {
-							    yyerror( "变量名没有定义" );
-								strcpy( $$.factor.str, "no_id_defined" ); /*容错处理*/
-								$$.factor.type = INT;
-								$$.factor.addr = -1;
-								$$.factor.width = INT_WIDTH;							    
-							}
-	                      }
+        | '-' unary
+        {
+            printf("产生式：unary -> -unary\n");
+            $$.unary.type = $2.unary.type;
+			$$.unary.width = $2.unary.width;
+			$$.unary.truelist = NULL;
+			$$.unary.falselist = NULL;	
+		    $$.unary.addr = NewTemp(TopSymbolList, $$.unary.str, $$.unary.width);
+		    if($2.unary.type == INT) {
+		    	Gen(OIntUminus, $2.unary.addr, 0, $$.unary.addr, $2.unary.str, "", $$.unary.str);
+		    } else if($2.unary.type == FLOAT) {
+				Gen(OFloatUminus, $2.unary.addr, 0, $$.unary.addr, $2.unary.str, "", $$.unary.str);
+		    } else {
+		    	yyerror("非整型或浮点型运算");
+		    }			  
+        }
 
-      |CONST              {                        
-							struct ConstElem * p; 
-							    printf("产生式：factor->CONST\n");
+        | factor
+        {
+            printf("产生式：unary -> factor\n");
+            strcpy( $$.unary.str, $1.factor.str );
+			$$.unary.type = $1.factor.type;
+			$$.unary.addr = $1.factor.addr;
+			$$.unary.width = $1.factor.width;
+			$$.unary.truelist = $1.factor.truelist;
+			$$.unary.falselist = $1.factor.falselist;
+        }
+        ;
 
-								p = LookUpConstList( $1.constval.type, $1.constval.value, $1.constval.width ) ;
-								if( p== NULL )
-                                    p = AddToConstList( $1.constval.str, $1.constval.type, $1.constval.value, $1.constval.width );
+factor  : '(' expr ')'      
+        {
+            printf("产生式：factor->(expr)\n" );
+            
+            strcpy($$.factor.str, $2.expr.str);
+			$$.factor.type = $2.expr.type;
+			$$.factor.addr = $2.expr.addr;
+			$$.factor.width = $2.expr.width;
+			$$.factor.truelist = $2.expr.truelist;
+			$$.factor.falselist = $2.expr.falselist;
+        }
 
-								strcpy( $$.factor.str, $1.constval.str );
-								$$.factor.type  = $1.constval.type;
-								$$.factor.addr  = p->addr;
-								$$.factor.width = p->width;
-                          }
-      ; 
+        | ID                
+        { 
+            struct SymbolElem * p;
+            printf("产生式：factor->id\n"); 
+            p = LookUpAllSymbolList( TopSymbolList, $1.id.name );
+            if( p != NULL ) {
+                strcpy( $$.factor.str, p->name );
+                $$.factor.type  = p->type;
+                $$.factor.addr  = p->addr;
+                $$.factor.width = p->width;
+            }							    
+            else {
+                yyerror( "变量名没有定义" );
+                strcpy( $$.factor.str, "no_id_defined" ); /*容错处理*/
+                $$.factor.type = INT;
+                $$.factor.addr = -1;
+                $$.factor.width = INT_WIDTH;							    
+            }
+            $$.factor.truelist = NULL;
+			$$.factor.falselist = NULL;
+        }
+
+        | CONST              
+        {                        
+            struct ConstElem * p; 
+            printf("产生式：factor->CONST\n");
+
+            p = LookUpConstList( $1.constval.type, $1.constval.value, $1.constval.width ) ;
+            if( p== NULL )
+                p = AddToConstList( $1.constval.str, $1.constval.type, $1.constval.value, $1.constval.width );
+
+            strcpy( $$.factor.str, $1.constval.str );
+            $$.factor.type  = $1.constval.type;
+            $$.factor.addr  = p->addr;
+            $$.factor.width = p->width;
+            $$.factor.truelist = NULL;
+			$$.factor.falselist = NULL;
+        }
+        ; 
 
 %%
 #include "lex.yy.c"
@@ -642,12 +1341,12 @@ int main()
 {
 	char sourcefile[1000],destfile[1000];
 
-	printf("请输入要编译的源程序文件名(回车默认为d:\\gencode\\code.txt)："); gets(sourcefile);
+	printf("请输入要编译的源程序文件名(回车默认为code.txt)："); gets(sourcefile);
         if( strcmp( sourcefile,"")== 0 ) 
-            strcpy( sourcefile, "d:\\gencode\\code.txt");
-	printf("请输入存放中间代码的文件名(回车默认为d:\\gencode\\gencode.txt)："); gets(destfile);
+            strcpy( sourcefile, "code.txt");
+	printf("请输入存放中间代码的文件名(回车默认为gencode.txt)："); gets(destfile);
         if( strcmp( destfile,"")== 0 ) 
-            strcpy( destfile, "d:\\gencode\\gencode.txt");
+            strcpy( destfile, "gencode.txt");
 
 	BeginCompileOneFile( sourcefile );
 
@@ -676,9 +1375,3 @@ int main()
 	getchar();
     return 0;
 }
-
-
-
-
-
-   

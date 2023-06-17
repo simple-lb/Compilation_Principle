@@ -411,9 +411,9 @@ static char *yy_last_accepting_cpos;
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 char *yytext;
-#line 1 "compile.l"
+#line 1 ".\\compile.l"
 #define INITIAL 0
-#line 3 "compile.l"
+#line 3 ".\\compile.l"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -571,7 +571,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 24 "compile.l"
+#line 24 ".\\compile.l"
 
 
 #line 578 "lex.yy.c"
@@ -659,62 +659,62 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 26 "compile.l"
+#line 26 ".\\compile.l"
 {/*no action and no return */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 27 "compile.l"
+#line 27 ".\\compile.l"
 {LineNo++; /*printf("行号：%d\n",LineNo);*/ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 29 "compile.l"
+#line 29 ".\\compile.l"
 {   return (IF);   }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 30 "compile.l"
+#line 30 ".\\compile.l"
 {   return (ELSE); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 31 "compile.l"
+#line 31 ".\\compile.l"
 {   return (WHILE);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 32 "compile.l"
+#line 32 ".\\compile.l"
 {   return (DO);   }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 33 "compile.l"
+#line 33 ".\\compile.l"
 {   return (BREAK);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 36 "compile.l"
+#line 36 ".\\compile.l"
 {  yylval.basic.type=CHAR;   return (BASIC);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 37 "compile.l"
+#line 37 ".\\compile.l"
 {  yylval.basic.type=INT;    return (BASIC);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 38 "compile.l"
+#line 38 ".\\compile.l"
 {  yylval.basic.type=FLOAT;  return (BASIC);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 39 "compile.l"
+#line 39 ".\\compile.l"
 {  yylval.basic.type=BOOL;   return (BASIC);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 41 "compile.l"
+#line 41 ".\\compile.l"
 { yylval.constval.str[0] = yytext[1]; yylval.constval.str[1]='\0';  /*str用于演示用*/
               yylval.constval.type = CHAR;    
               memset( &yylval.constval.value, 0, sizeof( yylval.constval.value) );
@@ -726,7 +726,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 50 "compile.l"
+#line 50 ".\\compile.l"
 { strcpy(yylval.constval.str, yytext); /*str用于演示用*/
               yylval.constval.type = INT; 
               memset( &yylval.constval.value, 0, sizeof( yylval.constval.value) );
@@ -738,7 +738,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 59 "compile.l"
+#line 59 ".\\compile.l"
 { strcpy(yylval.constval.str, yytext);  /*str用于演示用*/
               yylval.constval.type = FLOAT;
               memset( &yylval.constval.value, 0, sizeof( yylval.constval.value) );
@@ -750,7 +750,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 68 "compile.l"
+#line 68 ".\\compile.l"
 { strcpy(yylval.constval.str, yytext); /*str用于演示用*/
               yylval.constval.type = BOOL;
               memset( &yylval.constval.value, 0, sizeof( yylval.constval.value) );
@@ -762,7 +762,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 77 "compile.l"
+#line 77 ".\\compile.l"
 { strcpy(yylval.constval.str, yytext); /*str用于演示用*/
               yylval.constval.type = BOOL;
               memset( &yylval.constval.value, 0, sizeof( yylval.constval.value) );
@@ -774,62 +774,62 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 86 "compile.l"
+#line 86 ".\\compile.l"
 {  strncpy( yylval.id.name, yytext, ID_MAX_LEN );yylval.id.name[ID_MAX_LEN]='\0'; return (ID); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 88 "compile.l"
+#line 88 ".\\compile.l"
 {  return(RELOP_LT);  }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 89 "compile.l"
+#line 89 ".\\compile.l"
 {  return(RELOP_LE);  }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 90 "compile.l"
+#line 90 ".\\compile.l"
 {  return(RELOP_GT);  }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 91 "compile.l"
+#line 91 ".\\compile.l"
 {  return(RELOP_GE);  }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 93 "compile.l"
+#line 93 ".\\compile.l"
 {  return(RELOP_EQ);  }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 94 "compile.l"
+#line 94 ".\\compile.l"
 {  return(RELOP_NEQ); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 96 "compile.l"
+#line 96 ".\\compile.l"
 {  return OR;  }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 97 "compile.l"
+#line 97 ".\\compile.l"
 {  return AND; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 101 "compile.l"
+#line 101 ".\\compile.l"
 { printf("备注:%s\n",yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 103 "compile.l"
+#line 103 ".\\compile.l"
 {  return yytext[0]; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 105 "compile.l"
+#line 105 ".\\compile.l"
 ECHO;
 	YY_BREAK
 #line 836 "lex.yy.c"
@@ -1692,7 +1692,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 105 "compile.l"
+#line 105 ".\\compile.l"
 
 
 /*该函数设置yyin变量，fflex对yyin变量所对应的文件进行词法分析*/

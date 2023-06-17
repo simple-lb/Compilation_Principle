@@ -4,7 +4,7 @@ static char yysccsid[] = "@(#)yaccpar	1.8 (Berkeley) 01/02/91\n\
  and to remove the warning of unreferenced yyerrlab and yynewerror labels";
 #endif
 #define YYBYACC 1
-#line 1 "compile.y"
+#line 1 ".\compile.y"
  
 #include <ctype.h>
 #include <stdio.h>
@@ -294,7 +294,13 @@ void PrintConstList(void)
 #define OFloatToBool     1059
 #define OBoolToChar      1060
 #define OBoolToInt       1061
-#define OBoolToFloat     1062 
+#define OBoolToFloat     1062
+
+#define HALT             	1063
+
+/* 取反 */
+#define OIntUminus			1071
+#define OFloatUminus		1072
 
 /*四元式数据结构*/
 struct Quadruple {
@@ -336,8 +342,9 @@ void DestroyQuadTable( void )
 
 /*当Arg1是变量或临时变量时，Arg1Name是该变量的名称,用于演示时使用，其余参数类同 */
 int Gen( int Op, int Arg1, int Arg2, int Arg3, char *Arg1Name, char *Arg2Name, char *Arg3Name )
-{ struct Quadruple * ptr; 
-  int incr = 100;
+{ 
+    struct Quadruple * ptr; 
+    int incr = 100;
     if( QuadTable.len >= QuadTable.size ) {
         ptr = realloc( QuadTable.base, QuadTable.size+incr );
         if( ptr==NULL ) return -1;
@@ -359,58 +366,111 @@ int Gen( int Op, int Arg1, int Arg2, int Arg3, char *Arg1Name, char *Arg2Name, c
 
 /*把四元式所对应的三地址代码写入到文件中*/
 void WriteQuadTableToFile( const char * FileName )
-{FILE * fp;
-struct Quadruple * ptr;
-int i,op;
-char str[1000],ch;
+{
+    FILE * fp;
+    struct Quadruple * ptr;
+    int i,op;
+    char str[1000],ch;
     fp = fopen( FileName, "w" );
     if( fp==NULL ) return;
     for( i=0, ptr = QuadTable.base; i < QuadTable.len; i++,ptr++ ) {
         fprintf(fp, "%5d:  ", QuadTable.startaddr + i);
+        printf("%5d:  ", QuadTable.startaddr + i);
         op = ptr->op;
         switch( op ) {
-            case OIntAdd        :
-            case OIntSub        :
-            case OIntMultiply   :
-            case OIntDivide     :
-            case OFloatAdd      :
-            case OFloatSub      :
-            case OFloatMultiply :
-            case OFloatDivide   : if( op==OIntAdd || op==OFloatAdd) ch = '+';
-                                  if( op==OIntSub || op==OFloatSub) ch = '-';
-                                  if( op==OIntMultiply || op==OFloatMultiply) ch = '*';
-                                  if( op==OIntDivide || op==OFloatDivide) ch = '/';
-                                  sprintf(str,"[%d] = [%d] %c [%d]", ptr->arg3, ptr->arg1, ch, ptr->arg2);
-                                  break;
-            case OIntEvaluation   :
-            case OFloatEvaluation :
-            case OCharEvaluation  :
-            case OBoolEvaluation  : sprintf(str,"[%d] = [%d]", ptr->arg3, ptr->arg1);
-                                    break;
-            case OGoto            : sprintf(str,"Goto %d", ptr->arg3);
-                                    break;
-            case OGTGoto  : sprintf(str,"if [%d]>[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  break;
-            case OGEGoto  : sprintf(str,"if [%d]>=[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case OLTGoto  : sprintf(str,"if [%d]<[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  break;
-            case OLEGoto  : sprintf(str,"if [%d]<=[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case OEQGoto  : sprintf(str,"if [%d]==[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
-            case ONEQGoto : sprintf(str,"if [%d]<>[%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 ); break;
+            case OIntAdd: 
+         	case OIntSub: 
+         	case OIntMultiply: 
+         	case OIntDivide:
+            case OFloatAdd: 
+            case OFloatSub: 
+            case OFloatMultiply: 
+            case OFloatDivide:
+           		if(op == OIntAdd || op == OFloatAdd) ch = '+';
+           		if(op == OIntSub || op == OFloatSub) ch = '-';
+           		if(op == OIntMultiply || op == OFloatMultiply) ch = '*';
+           		if(op == OIntDivide || op == OFloatDivide) ch = '/';
+                sprintf(str, "[%d] = [%d] %c [%d]", ptr->arg3, ptr->arg1, ch, ptr->arg2);
+				printf("%s = %s %c %s\n", ptr->arg3name, ptr->arg1name, ch, ptr->arg2name);
+                break;
 
-            case OCharToInt   : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
-            case OCharToFloat : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
-            case OIntToFloat  : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
-            case OIntToChar   : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToChar : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToInt  : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
+            case OIntEvaluation:
+            case OFloatEvaluation:
+            case OCharEvaluation:
+            case OBoolEvaluation:
+            	sprintf(str, "[%d] = [%d]", ptr->arg3, ptr->arg1);
+				printf("%s = %s\n", ptr->arg3name, ptr->arg1name);
+                break;
 
-            case OCharToBool   : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OIntToBool    : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OFloatToBool  : sprintf( str,"[%d] = (bool) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OBoolToChar   : sprintf( str,"[%d] = (char) [%d]",  ptr->arg3, ptr->arg1 );  break;
-            case OBoolToInt    : sprintf( str,"[%d] = (int) [%d]",   ptr->arg3, ptr->arg1 );  break;
-            case OBoolToFloat  : sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1 );  break;
+            case OIntUminus:
+            case OFloatUminus: 
+            	sprintf(str, "[%d] = - [%d]", ptr->arg3, ptr->arg1);
+            	printf("%s = %s\n", ptr->arg3name, ptr->arg1name);
+                break;
 
-            default: yyerror("程序错误：出现不认识的运算符！"); strcpy(str, "error: Unknown operator");break;
+            case OGoto:
+				sprintf(str, "Goto %d", ptr->arg3);
+				printf("Goto %d\n", ptr->arg3);
+                break;
+
+            case OLTGoto: 
+				sprintf(str, "if [%d] < [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s < %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OLEGoto: 
+				sprintf(str, "if [%d] <= [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s <= %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OGTGoto: 
+				sprintf(str, "if [%d] > [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s > %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case OGEGoto: 
+				sprintf(str, "if [%d] >= [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s >= %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break;
+			case OEQGoto: 
+				sprintf(str, "if [%d] == [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s == %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+			case ONEQGoto: 
+				sprintf(str, "if [%d] != [%d] Goto %d", ptr->arg1, ptr->arg2, ptr->arg3 );  
+				printf("if %s != %s Goto %d\n", ptr->arg1name, ptr->arg2name, ptr->arg3 );  
+				break; 
+
+            case OCharToBool:
+            case OIntToBool:
+            case OFloatToBool:
+            	sprintf( str,"[%d] = (bool) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (bool) %s\n", ptr->arg3name, ptr->arg1name);  
+				break;
+			case OBoolToChar:
+            case OIntToChar:
+            case OFloatToChar:
+            	sprintf( str,"[%d] = (char) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (char) %s\n", ptr->arg3name, ptr->arg1name);  
+				break; 
+			case OBoolToInt:
+            case OCharToInt:
+            case OFloatToInt:
+            	sprintf( str,"[%d] = (int) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (int) %s\n", ptr->arg3name, ptr->arg1name);  
+				break;
+			case OBoolToFloat:
+            case OCharToFloat:
+            case OIntToFloat:
+            	sprintf( str,"[%d] = (float) [%d]", ptr->arg3, ptr->arg1); 
+				printf("%s = (float) %s\n", ptr->arg3name, ptr->arg1name);  
+				break; 
+
+			case HALT : 
+				sprintf(str, "HALT"); 
+				printf("HALT\n");
+				break;
+
+            default:
+            	yyerror("程序错误：出现不认识的运算符！"); 
+                strcpy(str, "error: Unknown operator");break;
         }
         fprintf(fp,"%s\n",str);
     }
@@ -420,6 +480,90 @@ char str[1000],ch;
 
 /********************************上面:四元式的定义和函数****************************/
 
+
+/********************************下面:定义类型检查相关函数****************************/
+
+int typeMax(int type1, int type2)
+{
+	return type1 > type2 ? type1 : type2;
+}
+
+int typeWiden(int addr, int type, char name[], int wideType, char tmpName[], SymbolList TopSymbolList)
+{
+	if(type == wideType) {
+		return addr;
+	} else {
+		int op;
+		int tmpWidth;
+		int tmpAddr;
+		if(type == BOOL && wideType == CHAR) {
+			op = OBoolToChar;
+			tmpWidth = CHAR_WIDTH;
+		} else if(type == BOOL && wideType == INT) {
+			op = OBoolToInt;
+			tmpWidth = INT_WIDTH;
+		} else if(type == BOOL && wideType == FLOAT) {
+			op = OBoolToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		} else if(type == CHAR && wideType == INT) {
+			op = OCharToInt;
+			tmpWidth = INT_WIDTH;
+		} else if(type == CHAR && wideType == FLOAT) {
+			op = OCharToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		} else if(type == INT && wideType == FLOAT) {
+			op = OIntToFloat;
+			tmpWidth = FLOAT_WIDTH;
+		}
+		tmpAddr = NewTemp(TopSymbolList, tmpName, tmpWidth);
+		Gen(op, addr, 0, tmpAddr, name, "", tmpName);
+
+		return tmpAddr;
+	}
+}
+
+/********************************上面:定义类型检查相关函数****************************/
+
+
+/******************************下面:定义回填相关变量和函数*******************************************/
+/* 采用链表存储*/
+struct backlist{
+     int backaddr;/* 用来表示回填数据地址*/
+     struct backlist *next ; 
+};
+
+struct backlist * makelist(int i)
+{
+    struct backlist *x  = (struct  backlist *)malloc( sizeof( struct backlist)) ; 
+	x->backaddr = i ; 
+    x->next = NULL;
+	return x;
+}
+
+struct backlist *  merge(struct backlist * p1 , struct backlist *p2 )
+{
+       struct backlist * tail = p1;
+       while( tail->next != NULL){
+	        tail = tail->next; 
+	   }	   
+	   tail->next = p2;
+       return p1; 	  /*将数据合并到p1 中	   */
+}
+
+void backpatch(struct backlist *p , int instr)
+{
+     /* 回填数据*/
+	struct backlist *temp;
+    temp = p;
+	QuadTable.base[temp->backaddr-QuadTable.startaddr].arg3 = instr; 
+	while(temp->next != NULL) {
+	   temp = temp->next;
+	   QuadTable.base[temp->backaddr-QuadTable.startaddr]. arg3 = instr; /*循环回填列表*/
+	}
+}
+
+
+/******************************上面:定义回填相关变量和函数*******************************************/
 
 
 /**************下面:定义句法分析栈中元素的信息，即终结符和非终结符的综合属性****************/
@@ -448,10 +592,16 @@ char str[1000],ch;
 	   int type;
 	   int addr;
 	   int width;
-	} factor, term, expr, rel, equality, join, bool;/*非终结符factor, term, expr, rel, equality, join, bool的综合属性*/
+       struct backlist * truelist;
+	   struct backlist * falselist;
+	   struct backlist * nextlist;
+	   struct backlist * breaklist;/* 用于存放break的回填的地址*/
+	} factor, term, expr, unary, rel, equality, join, bool, N, stmt, stmts, block;/*非终结符factor, term, expr, unary, rel, equality, join, bool, N, stmt, stmts, block的综合属性*/
+        /*其它文法符号的属性记录可以在下面继续添加*/
 
-
-
+    struct {
+	   int instr;/* 下一条指令的序号，即QuadTable.len + QuadTable.startaddr  */
+	} M;
 } ;
 
 #define YYSTYPE union ParseStackNodeInfo 
@@ -463,7 +613,7 @@ char str[1000],ch;
 
 
 
-#line 467 "y.tab.c"
+#line 617 "y.tab.c"
 #define BASIC 257
 #define CONST 258
 #define ID 259
@@ -484,116 +634,121 @@ char str[1000],ch;
 #define YYERRCODE 256
 short yylhs[] = {                                        -1,
     0,    1,    2,    5,    3,    3,    6,    7,    4,    4,
-    8,    8,    8,    8,    8,    8,    8,   10,   10,   11,
-   11,   12,   12,   12,   13,   13,   13,   13,   13,    9,
-    9,    9,   14,   14,   14,   15,   15,   15,
+    9,    9,    9,    9,    9,    9,    9,   11,   11,   13,
+   13,   14,   14,   14,   15,   15,   15,   15,   15,    8,
+   12,   10,   10,   10,   16,   16,   16,   17,   17,   17,
+   18,   18,   18,
 };
 short yylen[] = {                                         2,
-    1,    6,    0,    0,    2,    0,    3,    1,    2,    0,
-    4,    5,    7,    5,    7,    2,    1,    3,    1,    3,
-    1,    3,    3,    1,    3,    3,    3,    3,    1,    3,
-    3,    1,    3,    3,    1,    3,    1,    1,
+    1,    6,    0,    0,    2,    0,    3,    1,    3,    0,
+    4,    6,   10,    7,    8,    2,    1,    4,    1,    4,
+    1,    3,    3,    1,    3,    3,    3,    3,    1,    0,
+    0,    3,    3,    1,    3,    3,    1,    2,    2,    1,
+    3,    1,    1,
 };
 short yydefred[] = {                                      0,
     3,    0,    1,    6,    0,    8,    0,    5,    0,    0,
-    0,    0,    0,    0,   17,    0,    9,    0,    0,    0,
-    0,    0,   16,    2,    7,   38,   37,    0,    0,    0,
-   35,    0,    0,    0,    0,   24,    0,    0,    0,    0,
-    0,   11,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,   36,    0,    0,   33,   34,
-    0,    0,    0,    0,    0,    0,    0,   22,   23,   14,
-    0,    0,    0,   13,   15,
+    0,    0,    2,    0,    0,   30,   30,    0,   17,    9,
+    7,    0,    0,    0,    0,   16,   43,   42,    0,    0,
+    0,    0,    0,   37,   40,    0,    0,    0,    0,   24,
+    0,    0,   39,   38,    0,    0,    0,   11,    0,    0,
+    0,    0,    0,    0,   30,   30,   30,    0,    0,    0,
+    0,   41,    0,    0,   35,   36,    0,    0,    0,    0,
+    0,    0,    0,   22,   23,   30,    0,    0,    0,    0,
+    0,    0,   31,   14,    0,   30,   15,    0,   13,
 };
 short yydgoto[] = {                                       2,
-   15,    4,    5,    7,   16,    8,    9,   17,   32,   33,
-   34,   35,   36,   30,   31,
+   19,    4,    5,    7,   10,    8,    9,   11,   20,   36,
+   37,   86,   38,   39,   40,   33,   34,   35,
 };
-short yysindex[] = {                                   -110,
-    0,    0,    0,    0, -229,    0, -108,    0, -220,  -18,
-    9,   13, -108,   -4,    0,  -80,    0,   15,  -39,  -39,
-  -39, -211,    0,    0,    0,    0,    0,  -39,  -29,  -22,
-    0,   14,  -17, -214, -263,    0,   -8,   25,   11,  -39,
-  -39,    0,  -39,  -39,  -39,  -39,  -39,  -39,  -39, -108,
-  -39,  -39,  -39, -108,  -39,    0,  -22,  -22,    0,    0,
-  -11,  -11,  -11,  -11, -214, -195, -263,    0,    0,    0,
-    5, -108,   16,    0,    0,
+short yysindex[] = {                                   -117,
+    0,    0,    0,    0, -246,    0,    0,    0, -245,  -82,
+ -103,   11,    0,  -16,   19,    0,    0,   15,    0,    0,
+    0,   21,   21,   25, -103,    0,    0,    0,   21,   21,
+   21,  -20,    9,    0,    0,   17,  -17, -195, -220,    0,
+   21, -184,    0,    0,  -11,   21,   21,    0,   21,   21,
+   21,   21,   21,   21,    0,    0,    0,   21,   21,   -8,
+   40,    0,    9,    9,    0,    0,   28,   28,   28,   28,
+   21, -103,   21,    0,    0,    0,   21, -195, -180, -220,
+ -103,    5,    0,    0,   23,    0,    0, -103,    0,
 };
 short yyrindex[] = {                                      0,
-    0,    0,    0,    0, -120,    0,  -52,    0,    0,    0,
+    0,    0,    0,    0, -122,    0, -116,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,  -41,
-    0,  -19,    0,    6,    1,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,  -33,  -24,    0,    0,
-  -14,  -10,   -5,   -1,    7, -114,    3,    0,    0,    0,
-    0,    0,    0,    0,    0,
+    0,    0,  -41,    0,    0,  -19,    0,    6,    1,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,  -33,  -24,    0,    0,  -14,  -10,   -5,   -1,
+    0,    0,    0,    0,    0,    0,    0,    7, -110,    3,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,
 };
 short yygindex[] = {                                      0,
-   76,    0,    0,    0,    0,    0,    0,   10,   22,    8,
-   29,   26,  -15,   21,   28,
+   83,    0,    0,    0,    0,    0,    0,   12,   -9,   33,
+  -36,    0,   18,   20,   -6,   29,    8,    0,
 };
-#define YYTABLESIZE 282
-short yytable[] = {                                      32,
-   28,   32,   10,   32,   10,   52,   53,   30,   12,   30,
-   12,   30,    1,   40,    1,   41,   31,   32,   31,   43,
-   31,   29,   22,   50,   44,   30,   25,    6,   37,   42,
-   26,   40,   54,   41,   31,   27,   68,   69,   18,   28,
-   29,   21,   19,   20,   24,   73,   19,   18,   20,   39,
-   38,   56,   21,   40,   23,   41,   40,   51,   41,   66,
-   57,   58,   71,   70,   55,   72,   61,   62,   63,   64,
-   59,   60,    4,   25,   75,    3,   67,   65,    0,    0,
-    0,   74,    0,    0,    0,    0,    0,    0,    0,    0,
+#define YYTABLESIZE 285
+short yytable[] = {                                      34,
+   10,   34,   10,   34,   60,    1,   30,   32,    4,   32,
+    6,   32,   12,   12,   12,   42,   33,   34,   33,    1,
+   33,   29,   46,   56,   47,   32,   25,   24,   25,   62,
+   26,   46,   76,   47,   33,   27,   43,   44,   48,   28,
+   82,   21,   13,   20,   22,   85,   19,   18,   58,   59,
+   49,   74,   75,   30,   32,   50,   65,   66,   23,   46,
+   31,   47,   79,   45,   41,   29,   71,   72,   73,   21,
+   46,   84,   47,   26,   63,   64,   57,   61,   89,   77,
+   83,   87,    3,   67,   68,   69,   70,   81,   78,    0,
+    0,    0,   80,    0,    0,    0,    0,   88,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,   10,   10,    0,   10,
+   10,   10,   30,   30,    0,   30,   30,   30,   12,   12,
+    0,   12,   12,   12,    0,   14,   15,    0,   16,   17,
+   18,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,   10,   10,
-    0,   10,   10,   10,   12,   12,    0,   12,   12,   12,
-   10,   11,    0,   12,   13,   14,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,   26,   27,
-    0,    0,    0,   32,   32,   32,   32,   32,   32,   32,
-   32,   30,   30,   30,   30,   30,   30,   30,   30,    0,
-   31,   31,   31,   31,   31,   31,   31,   31,    0,   29,
-   29,   29,   29,   49,   25,   25,   25,   25,   26,   26,
-   26,   26,   49,   27,   27,   27,   27,   28,   28,   28,
-   28,   21,   21,   20,   20,   49,   19,   18,   45,   46,
-   47,   48,
+    0,    0,    0,   34,   34,   34,   34,   34,   34,   34,
+   34,   32,   32,   32,   32,   32,   32,   32,   32,    0,
+   33,   33,   33,   33,   33,   33,   33,   33,    0,   29,
+   29,   29,   29,   55,   25,   25,   25,   25,   26,   26,
+   26,   26,   55,   27,   27,   27,   27,   28,   28,   28,
+   28,   21,   21,   20,   20,   55,   19,   18,   27,   28,
+    0,   51,   52,   53,   54,
 };
 short yycheck[] = {                                      41,
-   40,   43,  123,   45,  125,  269,  270,   41,  123,   43,
-  125,   45,  123,   43,  123,   45,   41,   59,   43,   42,
-   45,   41,   13,   41,   47,   59,   41,  257,   21,   59,
-   41,   43,   41,   45,   59,   41,   52,   53,  259,   41,
-   19,   41,   61,   41,  125,   41,   41,   41,   40,   28,
-  262,   41,   40,   43,   59,   45,   43,  272,   45,   50,
-   40,   41,   55,   54,   40,  261,   45,   46,   47,   48,
-   43,   44,  125,   59,   59,    0,   51,   49,   -1,   -1,
-   -1,   72,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+  123,   43,  125,   45,   41,  123,  123,   41,  125,   43,
+  257,   45,  123,  259,  125,   25,   41,   59,   43,  123,
+   45,   41,   43,   41,   45,   59,   41,   16,   17,   41,
+   41,   43,   41,   45,   59,   41,   29,   30,   59,   41,
+   77,   41,  125,   41,   61,   41,   41,   41,  269,  270,
+   42,   58,   59,   33,   22,   47,   49,   50,   40,   43,
+   40,   45,   72,   31,   40,   45,   55,   56,   57,   59,
+   43,   81,   45,   59,   46,   47,  272,  262,   88,   40,
+  261,   59,    0,   51,   52,   53,   54,   76,   71,   -1,
+   -1,   -1,   73,   -1,   -1,   -1,   -1,   86,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,  259,  260,   -1,  262,
+  263,  264,  259,  260,   -1,  262,  263,  264,  259,  260,
+   -1,  262,  263,  264,   -1,  259,  260,   -1,  262,  263,
+  264,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  259,  260,
-   -1,  262,  263,  264,  259,  260,   -1,  262,  263,  264,
-  259,  260,   -1,  262,  263,  264,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  258,  259,
    -1,   -1,   -1,  265,  266,  267,  268,  269,  270,  271,
   272,  265,  266,  267,  268,  269,  270,  271,  272,   -1,
   265,  266,  267,  268,  269,  270,  271,  272,   -1,  269,
   270,  271,  272,  271,  269,  270,  271,  272,  269,  270,
   271,  272,  271,  269,  270,  271,  272,  269,  270,  271,
-  272,  271,  272,  271,  272,  271,  271,  271,  265,  266,
-  267,  268,
+  272,  271,  272,  271,  272,  271,  271,  271,  258,  259,
+   -1,  265,  266,  267,  268,
 };
 #define YYFINAL 2
 #ifndef YYDEBUG
@@ -622,18 +777,18 @@ char *yyrule[] = {
 "decls :",
 "decl : type ID ';'",
 "type : BASIC",
-"stmts : stmts stmt",
+"stmts : stmts M stmt",
 "stmts :",
 "stmt : ID '=' expr ';'",
-"stmt : IF '(' bool ')' stmt",
-"stmt : IF '(' bool ')' stmt ELSE stmt",
-"stmt : WHILE '(' bool ')' stmt",
-"stmt : DO stmt WHILE '(' bool ')' ';'",
+"stmt : IF '(' bool ')' M stmt",
+"stmt : IF '(' bool ')' M stmt ELSE N M stmt",
+"stmt : WHILE M '(' bool ')' M stmt",
+"stmt : DO M stmt WHILE '(' bool ')' ';'",
 "stmt : BREAK ';'",
 "stmt : block",
-"bool : bool OR join",
+"bool : bool OR M join",
 "bool : join",
-"join : join AND equality",
+"join : join AND M equality",
 "join : equality",
 "equality : equality RELOP_EQ rel",
 "equality : equality RELOP_NEQ rel",
@@ -643,12 +798,17 @@ char *yyrule[] = {
 "rel : expr RELOP_GT expr",
 "rel : expr RELOP_GE expr",
 "rel : expr",
+"M :",
+"N :",
 "expr : expr '+' term",
 "expr : expr '-' term",
 "expr : term",
-"term : term '*' factor",
-"term : term '/' factor",
-"term : factor",
+"term : term '*' unary",
+"term : term '/' unary",
+"term : unary",
+"unary : '!' unary",
+"unary : '-' unary",
+"unary : factor",
 "factor : '(' expr ')'",
 "factor : ID",
 "factor : CONST",
@@ -682,7 +842,7 @@ YYSTYPE yylval;
 short yyss[YYSTACKSIZE];
 YYSTYPE yyvs[YYSTACKSIZE];
 #define yystacksize YYSTACKSIZE
-#line 637 "compile.y"
+#line 1336 ".\compile.y"
 #include "lex.yy.c"
 
 int yyparse();  /*main函数要调用yyparse()函数，但该函数的定义在后面，所以要先声明(才能引用)*/
@@ -691,12 +851,12 @@ int main()
 {
 	char sourcefile[1000],destfile[1000];
 
-	printf("请输入要编译的源程序文件名(回车默认为d:\\gencode\\code.txt)："); gets(sourcefile);
+	printf("请输入要编译的源程序文件名(回车默认为code.txt)："); gets(sourcefile);
         if( strcmp( sourcefile,"")== 0 ) 
-            strcpy( sourcefile, "d:\\gencode\\code.txt");
-	printf("请输入存放中间代码的文件名(回车默认为d:\\gencode\\gencode.txt)："); gets(destfile);
+            strcpy( sourcefile, "code.txt");
+	printf("请输入存放中间代码的文件名(回车默认为gencode.txt)："); gets(destfile);
         if( strcmp( destfile,"")== 0 ) 
-            strcpy( destfile, "d:\\gencode\\gencode.txt");
+            strcpy( destfile, "gencode.txt");
 
 	BeginCompileOneFile( sourcefile );
 
@@ -725,13 +885,7 @@ int main()
 	getchar();
     return 0;
 }
-
-
-
-
-
-   
-#line 735 "y.tab.c"
+#line 889 "y.tab.c"
 #define YYABORT goto yyabort
 #define YYACCEPT goto yyaccept
 #define YYERROR goto yyerrlab
@@ -871,226 +1025,725 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 490 "compile.y"
-{ printf("产生式：program->block\n"); }
+#line 641 ".\compile.y"
+{ 
+            printf("产生式：program->block\n"); 
+
+            if(yyvsp[0].block.nextlist != NULL) {
+				backpatch(yyvsp[0].block.nextlist, QuadTable.startaddr + QuadTable.len);
+		  	}
+		  	Gen(HALT, 0, 0, 0, "", "", "");
+        }
 break;
 case 2:
-#line 493 "compile.y"
-{ printf("产生式：block->{decls stmts}\n"); }
+#line 652 ".\compile.y"
+{ 
+            printf("产生式：block->{decls stmts}\n"); 
+
+            yyval.block.nextlist = yyvsp[-2].stmts.nextlist;
+        }
 break;
 case 3:
-#line 496 "compile.y"
-{ TopSymbolList = CreateSymbolList( TopSymbolList, TopSymbolList->endaddr ); }
+#line 660 ".\compile.y"
+{ 
+            TopSymbolList = CreateSymbolList( TopSymbolList, TopSymbolList->endaddr ); 
+        }
 break;
 case 4:
-#line 499 "compile.y"
-{ SymbolList env;
-                                 PrintSymbolList( TopSymbolList); 
-                                 env = TopSymbolList->prev;
-                                 DestroySymbolList( TopSymbolList ); 
-                                 TopSymbolList = env;                 
-                              }
+#line 666 ".\compile.y"
+{ 
+            SymbolList env;
+            PrintSymbolList( TopSymbolList); 
+            env = TopSymbolList->prev;
+            DestroySymbolList( TopSymbolList ); 
+            TopSymbolList = env;                 
+        }
 break;
 case 5:
-#line 507 "compile.y"
-{ printf("产生式：decls->decls decl\n"); }
+#line 676 ".\compile.y"
+{ 
+            printf("产生式：decls->decls decl\n"); 
+        }
 break;
 case 6:
-#line 508 "compile.y"
-{ printf("产生式：decls->null\n"); }
+#line 680 ".\compile.y"
+{ 
+            printf("产生式：decls->null\n"); 
+        }
 break;
 case 7:
-#line 511 "compile.y"
-{ int width;
+#line 686 ".\compile.y"
+{ 
+            int width;
                                 
-                                printf("产生式：decl->type ID; ID=%s\n",yyvsp[-1].id.name); 
-                                
-								switch( yyvsp[-2].basic.type ) {
-                                    case CHAR  : width = CHAR_WIDTH;  break;
-                                    case INT   : width = INT_WIDTH;   break;
-                                    case FLOAT : width = FLOAT_WIDTH; break;
-                                    case BOOL  : width = BOOL_WIDTH;  break;
-                                    default    : width = -1; break;
-                                }
-                                AddToSymbolList( TopSymbolList, yyvsp[-1].id.name, yyvsp[-2].basic.type, width );
+            printf("产生式：decl->type ID; ID=%s\n",yyvsp[-1].id.name); 
+            
+            switch( yyvsp[-2].basic.type ) {
+                case CHAR  : width = CHAR_WIDTH;  break;
+                case INT   : width = INT_WIDTH;   break;
+                case FLOAT : width = FLOAT_WIDTH; break;
+                case BOOL  : width = BOOL_WIDTH;  break;
+                default    : width = -1; break;
+            }
+            AddToSymbolList( TopSymbolList, yyvsp[-1].id.name, yyvsp[-2].basic.type, width );
 
-                              }
+        }
 break;
 case 8:
-#line 527 "compile.y"
-{ printf("产生式：type->BASIC\n"); yyval.basic.type = yyvsp[0].basic.type; }
+#line 704 ".\compile.y"
+{ 
+            printf("产生式：type->BASIC\n"); 
+            
+            yyval.basic.type = yyvsp[0].basic.type;
+        }
 break;
 case 9:
-#line 530 "compile.y"
-{printf("产生式：stmts->stmts stmt\n");}
+#line 712 ".\compile.y"
+{
+            printf("产生式：stmts->stmts stmt\n");
+
+            if( yyvsp[-2].stmts.nextlist  != NULL) {
+				backpatch(yyvsp[-2].stmts.nextlist, yyvsp[-1].M.instr) ;
+			}
+			yyval.stmts.nextlist = yyvsp[0].stmt.nextlist;
+        }
 break;
 case 10:
-#line 531 "compile.y"
-{printf("产生式：stmts->null\n");}
+#line 722 ".\compile.y"
+{
+            printf("产生式：stmts->null\n");
+        }
 break;
 case 11:
-#line 534 "compile.y"
-{ printf("产生式：stmt->id = expr;\n"); }
+#line 728 ".\compile.y"
+{ 
+            printf("产生式：stmt->id = expr;\n"); 
+            
+            struct SymbolElem * p;
+			p = LookUpAllSymbolList(TopSymbolList, yyvsp[-3].id.name );
+      		if(p != NULL) {
+                if (p->type == yyvsp[-1].expr.type) {
+                    switch (p->type) {
+                        case BOOL   : Gen(OBoolEvaluation , yyvsp[-1].expr.addr, 0, p->addr, yyvsp[-1].expr.str, "",  p->name);   break;
+                        case CHAR   : Gen(OCharEvaluation , yyvsp[-1].expr.addr, 0, p->addr, yyvsp[-1].expr.str, "",  p->name);   break;
+                        case INT    : Gen(OIntEvaluation , yyvsp[-1].expr.addr, 0, p->addr, yyvsp[-1].expr.str, "",  p->name);    break;
+                        case FLOAT  : Gen(OFloatEvaluation , yyvsp[-1].expr.addr, 0, p->addr, yyvsp[-1].expr.str, "",  p->name);  break;
+                        default: yyerror("变量类型非法");
+                    }
+                } else {
+                    int op;
+                    char tmpName[10];
+                    int tmpWidth;
+                    int tmpAddr;
+
+                    if(p->type == BOOL) {
+                        tmpWidth = BOOL_WIDTH;
+                        switch (yyvsp[-1].expr.type) {
+                            case CHAR : op = OCharToBool;   break;
+                            case INT  : op = OIntToBool;    break;
+                            case FLOAT: op = OFloatToBool;  break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == CHAR) {
+                        tmpWidth = CHAR_WIDTH;
+                        switch (yyvsp[-1].expr.type) {
+                            case BOOL : op = OBoolToChar;   break;
+                            case INT  : op = OIntToChar;    break;
+                            case FLOAT: op = OFloatToChar;  break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == INT) {
+                        tmpWidth = INT_WIDTH; 
+                        switch (yyvsp[-1].expr.type) {
+                            case BOOL : op = OBoolToInt;    break;
+                            case CHAR : op = OCharToInt;    break;
+                            case FLOAT: op = OFloatToInt;   break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else if(p->type == FLOAT) {
+                        tmpWidth = FLOAT_WIDTH;
+                        switch (yyvsp[-1].expr.type) {
+                            case BOOL : op = OBoolToFloat;  break;
+                            case CHAR : op = OCharToFloat;  break;
+                            case INT  : op = OIntToFloat;   break;
+                            default: yyerror("变量类型非法");
+                        }
+                    } else{
+                        yyerror("变量非法类型");
+                    } 
+                    tmpAddr = NewTemp(TopSymbolList, tmpName, tmpWidth);
+                    Gen(op, yyvsp[-1].expr.addr, 0, tmpAddr, yyvsp[-1].expr.str, "", tmpName);
+
+                    switch (p->type) {
+                        case BOOL : Gen(OBoolEvaluation , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case CHAR : Gen(OCharEvaluation , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case INT  : Gen(OIntEvaluation  , tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        case FLOAT: Gen(OFloatEvaluation, tmpAddr, 0, p->addr, tmpName, "",  p->name); break;
+                        default: yyerror("变量类型非法");
+                    }
+                }
+			} else {
+				yyerror( "变量名没有定义" );
+				strcpy( yyval.factor.str, "no_id_defined" ); /*容错处理*/
+				yyval.factor.type = INT;
+				yyval.factor.addr = -1;
+				yyval.factor.width = INT_WIDTH;						
+			 
+				Gen(OIntEvaluation , yyvsp[-1].expr.addr, 0, p->addr, yyvsp[-1].expr.str, "",  p->name);  
+				yyval.stmt.nextlist = NULL; 
+        	}
+        }
 break;
 case 12:
-#line 535 "compile.y"
-{ printf("产生式：stmt->if (bool) stmt\n");}
+#line 807 ".\compile.y"
+{ 
+            printf("产生式：stmt->if (bool) stmt\n");
+
+            backpatch(yyvsp[-3].bool.truelist, yyvsp[-1].M.instr);
+			yyval.stmt.nextlist = merge(yyvsp[-3].bool.falselist, yyvsp[0].stmt.nextlist);
+        }
 break;
 case 13:
-#line 536 "compile.y"
-{ printf("产生式：stmt->if (bool) stmt esle stmt\n"); }
+#line 815 ".\compile.y"
+{ 
+            printf("产生式：stmt->if (bool) stmt esle stmt\n"); 
+            
+            backpatch(yyvsp[-7].bool.truelist, yyvsp[-5].M.instr);
+			backpatch(yyvsp[-7].bool.falselist, yyvsp[-1].M.instr);
+			struct backlist *temp ;
+			temp = merge(yyvsp[-2].N.nextlist, yyvsp[-4].stmt.nextlist);
+			yyval.stmt.nextlist = merge(temp, yyvsp[0].stmt.nextlist);
+        }
 break;
 case 14:
-#line 537 "compile.y"
-{ printf("产生式：stmt->while (bool) stmt\n"); }
+#line 826 ".\compile.y"
+{ 
+            printf("产生式：stmt->while (bool) stmt\n"); 
+            
+            backpatch(yyvsp[0].stmt.nextlist, yyvsp[-5].M.instr);
+			backpatch(yyvsp[-3].bool.truelist, yyvsp[-1].M.instr);
+			yyval.stmt.nextlist = yyvsp[-3].bool.falselist;
+			Gen(OGoto, 0, 0, yyvsp[-5].M.instr, "", "", "");
+        }
 break;
 case 15:
-#line 538 "compile.y"
-{ printf("产生式：stmt->do stmt while (bool)\n"); }
+#line 836 ".\compile.y"
+{ 
+            printf("产生式：stmt->do stmt while (bool)\n"); 
+            
+            backpatch(yyvsp[-2].bool.truelist, yyvsp[-6].M.instr);
+            yyval.stmt.nextlist = yyvsp[-2].bool.falselist;
+        }
 break;
 case 16:
-#line 539 "compile.y"
-{ printf("产生式：stmt->break ;\n"); }
+#line 844 ".\compile.y"
+{ 
+            printf("产生式：stmt->break ;\n"); 
+        }
 break;
 case 17:
-#line 540 "compile.y"
-{ printf("产生式：stmt->block\n"); }
+#line 849 ".\compile.y"
+{ 
+            printf("产生式：stmt->block\n"); 
+        
+            yyval.stmt.nextlist = yyvsp[0].block.nextlist;
+        }
 break;
 case 18:
-#line 543 "compile.y"
-{ printf("产生式：bool->bool || join\n"); }
+#line 857 ".\compile.y"
+{ 
+            printf("产生式：bool->bool || join\n"); 
+            
+            strcpy(yyval.bool.str, "");
+			yyval.bool.type = 0;
+			yyval.bool.addr = 0;
+			yyval.bool.width = 0;  
+			backpatch(yyvsp[-3].bool.falselist, yyvsp[-1].M.instr);
+			yyval.bool.truelist = merge(yyvsp[-3].bool.truelist, yyvsp[0].join.truelist);
+			yyval.bool.falselist = yyvsp[0].join.falselist;
+        }
 break;
 case 19:
-#line 544 "compile.y"
-{ printf("产生式：bool->join\n"); }
+#line 870 ".\compile.y"
+{ 
+            printf("产生式：bool->join\n"); 
+            
+            strcpy( yyval.bool.str, yyvsp[0].join.str );
+			yyval.bool.type = yyvsp[0].join.type;
+			yyval.bool.addr = yyvsp[0].join.addr;
+			yyval.bool.width = yyvsp[0].join.width;
+			yyval.bool.truelist = yyvsp[0].join.truelist;
+			yyval.bool.falselist = yyvsp[0].join.falselist;    
+        }
 break;
 case 20:
-#line 547 "compile.y"
-{ printf("产生式：join->join && equality\n"); }
+#line 883 ".\compile.y"
+{ 
+            printf("产生式：join->join && equality\n"); 
+        
+            strcpy(yyval.join.str, "");
+			yyval.join.type = 0;
+			yyval.join.addr = 0;
+			yyval.join.width = 0;  
+            backpatch(yyvsp[-3].join.truelist, yyvsp[-1].M.instr);
+			yyval.join.truelist = yyvsp[0].equality.truelist;
+			yyval.join.falselist = merge(yyvsp[-3].join.falselist, yyvsp[0].equality.falselist);
+        }
 break;
 case 21:
-#line 548 "compile.y"
-{ printf("产生式：join->equality\n"); }
+#line 896 ".\compile.y"
+{ 
+            printf("产生式：join->equality\n"); 
+        
+            strcpy(yyval.join.str, yyvsp[0].equality.str);
+			yyval.join.type = yyvsp[0].equality.type;	
+			yyval.join.addr = yyvsp[0].equality.addr;
+		  	yyval.join.width = yyvsp[0].equality.width;
+			yyval.join.truelist = yyvsp[0].equality.truelist;
+			yyval.join.falselist = yyvsp[0].equality.falselist;
+        }
 break;
 case 22:
-#line 551 "compile.y"
-{ printf("产生式：equality->equality == rel\n"); }
+#line 909 ".\compile.y"
+{
+            printf("产生式：equality -> equality == rel\n");
+
+            strcpy(yyval.equality.str, "");
+			yyval.equality.type = 0;
+			yyval.equality.addr = 0;
+			yyval.equality.width = 0;
+			yyval.equality.truelist = makelist(QuadTable.len + QuadTable.startaddr);	
+			yyval.equality.falselist = makelist(QuadTable.len + QuadTable.startaddr + 1);	
+			Gen(OEQGoto, yyvsp[-2].equality.addr, yyvsp[0].rel.addr, 0, yyvsp[-2].equality.str, yyvsp[0].rel.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 23:
-#line 552 "compile.y"
-{ printf("产生式：equality->equality != rel\n"); }
+#line 923 ".\compile.y"
+{
+            printf("产生式：equality -> equality != rel\n");
+
+            strcpy(yyval.equality.str, "");
+            yyval.equality.type = 0;
+			yyval.equality.addr = 0;
+			yyval.equality.width = 0;
+			yyval.equality.truelist = makelist(QuadTable.len + QuadTable.startaddr);	
+			yyval.equality.falselist = makelist(QuadTable.len + QuadTable.startaddr + 1);	
+			Gen(ONEQGoto, yyvsp[-2].equality.addr, yyvsp[0].rel.addr, 0, yyvsp[-2].equality.str, yyvsp[0].rel.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 24:
-#line 553 "compile.y"
-{ printf("产生式：equality->rel\n"); }
+#line 937 ".\compile.y"
+{
+            printf("产生式：equality -> rel\n");
+
+            strcpy(yyval.equality.str, yyvsp[0].rel.str);
+			yyval.equality.type = yyvsp[0].rel.type;
+			yyval.equality.addr = yyvsp[0].rel.addr;
+		  	yyval.equality.width = yyvsp[0].rel.width;
+			yyval.equality.truelist = yyvsp[0].rel.truelist;
+			yyval.equality.falselist = yyvsp[0].rel.falselist;
+        }
 break;
 case 25:
-#line 556 "compile.y"
-{ printf("产生式：rel -> expr < expr\n"); }
+#line 950 ".\compile.y"
+{
+            printf("产生式：rel -> expr < expr\n");
+
+            strcpy(yyval.rel.str, "");
+            yyval.rel.type = 0;
+			yyval.rel.addr = 0;
+			yyval.rel.width = 0;
+			yyval.rel.truelist =  makelist(QuadTable.startaddr + QuadTable.len);	
+			yyval.rel.falselist =  makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OLTGoto, yyvsp[-2].expr.addr, yyvsp[0].expr.addr , 0 , yyvsp[-2].expr.str, yyvsp[0].expr.str, "_") ;
+			Gen(OGoto, 0, 0, 0, "", "", "_");
+		}
 break;
 case 26:
-#line 557 "compile.y"
-{ printf("产生式：rel -> expr <= expr\n"); }
+#line 964 ".\compile.y"
+{
+            printf("产生式：rel -> expr <= expr\n");
+
+            strcpy(yyval.rel.str, "");
+            yyval.rel.type = 0;
+			yyval.rel.addr = 0;
+			yyval.rel.width = 0;
+            yyval.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			yyval.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OLEGoto, yyvsp[-2].expr.addr, yyvsp[0].expr.addr, 0, yyvsp[-2].expr.str, yyvsp[0].expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 27:
-#line 558 "compile.y"
-{ printf("产生式：rel -> expr > expr\n"); }
+#line 978 ".\compile.y"
+{
+            printf("产生式：rel -> expr > expr\n");
+
+            strcpy(yyval.rel.str, "");
+            yyval.rel.type = 0;
+			yyval.rel.addr = 0;
+			yyval.rel.width = 0;
+            yyval.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			yyval.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OGTGoto, yyvsp[-2].expr.addr, yyvsp[0].expr.addr, 0, yyvsp[-2].expr.str, yyvsp[0].expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 28:
-#line 559 "compile.y"
-{ printf("产生式：rel -> expr >= expr\n"); }
+#line 992 ".\compile.y"
+{
+            printf("产生式：rel -> expr >= expr\n");
+
+            strcpy(yyval.rel.str, "");
+            yyval.rel.type = 0;
+			yyval.rel.addr = 0;
+			yyval.rel.width = 0;
+            yyval.rel.truelist = makelist(QuadTable.startaddr + QuadTable.len);
+			yyval.rel.falselist = makelist(QuadTable.startaddr + QuadTable.len + 1 );
+			Gen(OGEGoto, yyvsp[-2].expr.addr, yyvsp[0].expr.addr, 0, yyvsp[-2].expr.str, yyvsp[0].expr.str, "");
+			Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 29:
-#line 560 "compile.y"
-{ printf("产生式：rel -> expr\n"); }
+#line 1006 ".\compile.y"
+{ 	
+            printf("产生式：rel -> expr\n"); 
+	  		
+			strcpy(yyval.rel.str,yyvsp[0].expr.str);
+			yyval.rel.type = yyvsp[0].expr.type;
+			yyval.rel.addr = yyvsp[0].expr.addr;
+			yyval.rel.width = yyvsp[0].expr.width;
+			yyval.rel.truelist = NULL;
+			yyval.rel.falselist = NULL;
+ 	 	}
 break;
 case 30:
-#line 565 "compile.y"
-{ printf("产生式：expr->expr + term\n"); 
-                           
-						   }
+#line 1019 ".\compile.y"
+{
+            yyval.M.instr = QuadTable.startaddr + QuadTable.len;
+        }
 break;
 case 31:
-#line 569 "compile.y"
-{ printf("产生式：expr->expr - term\n"); 
-	  
-	  
-	                      }
+#line 1025 ".\compile.y"
+{
+            yyval.N.nextlist = makelist(QuadTable.len + QuadTable.startaddr);  
+            Gen(OGoto, 0, 0, 0, "", "", "");
+        }
 break;
 case 32:
-#line 574 "compile.y"
-{ printf("产生式：expr->term\n");
-							strcpy( yyval.expr.str, yyvsp[0].term.str );
-							yyval.expr.type = yyvsp[0].term.type;
-							yyval.expr.addr = yyvsp[0].term.addr;
-							yyval.expr.width = yyvsp[0].term.width;	
-	  
-	                      }
+#line 1033 ".\compile.y"
+{ 
+            printf("产生式：expr->expr + term\n"); 
+                           
+            yyval.expr.type = typeMax(yyvsp[-2].expr.type, yyvsp[0].term.type);
+			switch (yyval.expr.type) {
+				case BOOL 	: yyval.expr.width = BOOL_WIDTH; break;
+				case CHAR	: yyval.expr.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: yyval.expr.width = INT_WIDTH; break;
+				case FLOAT 	: yyval.expr.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			yyval.expr.addr = NewTemp(TopSymbolList, yyval.expr.str, yyval.expr.width);
+			if(yyvsp[-2].expr.type == yyvsp[0].term.type) {
+				if (yyvsp[-2].expr.type == INT) {
+					Gen(OIntAdd, yyvsp[-2].expr.addr, yyvsp[0].term.addr, yyval.expr.addr, yyvsp[-2].expr.str, yyvsp[0].term.str, yyval.expr.str); 
+				} else if (yyvsp[-2].expr.type == FLOAT) {
+					Gen(OFloatAdd, yyvsp[-2].expr.addr, yyvsp[0].term.addr, yyval.expr.addr, yyvsp[-2].expr.str, yyvsp[0].term.str, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if(yyvsp[-2].expr.type > yyvsp[0].term.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[0].term.addr, yyvsp[0].term.type, yyvsp[0].term.str, yyvsp[-2].expr.type, tmpName, TopSymbolList);
+				if(yyvsp[-2].expr.type == INT) {
+					Gen(OIntAdd, yyvsp[-2].expr.addr, tmpAddr, yyval.expr.addr, yyvsp[-2].expr.str, tmpName, yyval.expr.str);	
+				} else if(yyvsp[-2].expr.type == FLOAT) {
+					Gen(OFloatAdd, yyvsp[-2].expr.addr, tmpAddr, yyval.expr.addr, yyvsp[-2].expr.str, tmpName, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[-2].expr.addr, yyvsp[-2].expr.type, yyvsp[-2].expr.str, yyvsp[0].term.type, tmpName, TopSymbolList);
+				if(yyvsp[0].term.type == INT) {
+					Gen(OIntAdd, tmpAddr, yyvsp[0].term.addr, yyval.expr.addr, tmpName, yyvsp[0].term.str, yyval.expr.str);
+				} else if(yyvsp[0].term.type == FLOAT) {
+					Gen(OFloatAdd, tmpAddr, yyvsp[0].term.addr, yyval.expr.addr, tmpName, yyvsp[0].term.str, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			yyval.expr.truelist = NULL;
+			yyval.expr.falselist = NULL;
+        }
 break;
 case 33:
-#line 583 "compile.y"
-{ printf("产生式：term->term*factor\n"); }
+#line 1079 ".\compile.y"
+{ 
+            printf("产生式：expr->expr - term\n"); 
+	  
+            yyval.expr.type = typeMax(yyvsp[-2].expr.type, yyvsp[0].term.type);
+			switch (yyval.expr.type) {
+				case BOOL 	: yyval.expr.width = BOOL_WIDTH; break;
+				case CHAR	: yyval.expr.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: yyval.expr.width = INT_WIDTH; break;
+				case FLOAT 	: yyval.expr.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			yyval.expr.addr = NewTemp(TopSymbolList, yyval.expr.str, yyval.expr.width);
+			if(yyvsp[-2].expr.type == yyvsp[0].term.type) {
+				if (yyvsp[-2].expr.type == INT) {
+					Gen(OIntSub, yyvsp[-2].expr.addr, yyvsp[0].term.addr, yyval.expr.addr, yyvsp[-2].expr.str, yyvsp[0].term.str, yyval.expr.str); 
+				} else if (yyvsp[-2].expr.type == FLOAT) {
+					Gen(OFloatSub, yyvsp[-2].expr.addr, yyvsp[0].term.addr, yyval.expr.addr, yyvsp[-2].expr.str, yyvsp[0].term.str, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if(yyvsp[-2].expr.type > yyvsp[0].term.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[0].term.addr, yyvsp[0].term.type, yyvsp[0].term.str, yyvsp[-2].expr.type, tmpName, TopSymbolList);
+				if(yyvsp[-2].expr.type == INT) {
+					Gen(OIntSub, yyvsp[-2].expr.addr, tmpAddr, yyval.expr.addr, yyvsp[-2].expr.str, tmpName, yyval.expr.str);	
+				} else if(yyvsp[-2].expr.type == FLOAT) {
+					Gen(OFloatSub, yyvsp[-2].expr.addr, tmpAddr, yyval.expr.addr, yyvsp[-2].expr.str, tmpName, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[-2].expr.addr, yyvsp[-2].expr.type, yyvsp[-2].expr.str, yyvsp[0].term.type, tmpName, TopSymbolList);
+				if(yyvsp[0].term.type == INT) {
+					Gen(OIntSub, tmpAddr, yyvsp[0].term.addr, yyval.expr.addr, tmpName, yyvsp[0].term.str, yyval.expr.str);
+				} else if(yyvsp[0].term.type == FLOAT) {
+					Gen(OFloatSub, tmpAddr, yyvsp[0].term.addr, yyval.expr.addr, tmpName, yyvsp[0].term.str, yyval.expr.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			yyval.expr.truelist = NULL;
+			yyval.expr.falselist = NULL;
+	    }
 break;
 case 34:
-#line 585 "compile.y"
-{ printf("产生式：term->term/factor\n"); }
+#line 1125 ".\compile.y"
+{ 
+            printf("产生式：expr->term\n");
+
+            strcpy(yyval.expr.str, yyvsp[0].term.str);
+		  	yyval.expr.type = yyvsp[0].term.type;
+			yyval.expr.addr = yyvsp[0].term.addr;
+		 	yyval.expr.width = yyvsp[0].term.width;
+			yyval.expr.truelist = yyvsp[0].term.truelist;
+			yyval.expr.falselist = yyvsp[0].term.falselist;
+	  
+	    }
 break;
 case 35:
-#line 587 "compile.y"
-{ printf("产生式：term->factor\n");
-							strcpy( yyval.term.str, yyvsp[0].factor.str );
-							yyval.term.type = yyvsp[0].factor.type;
-							yyval.term.addr = yyvsp[0].factor.addr;
-							yyval.term.width = yyvsp[0].factor.width;	
-	                      }
+#line 1139 ".\compile.y"
+{ 
+            printf("产生式：term->term*unary\n"); 
+            
+            yyval.term.type = typeMax(yyvsp[-2].term.type, yyvsp[0].unary.type);
+			switch (yyval.term.type) {
+				case BOOL 	: yyval.term.width = BOOL_WIDTH; break;
+				case CHAR	: yyval.term.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: yyval.term.width = INT_WIDTH; break;
+				case FLOAT 	: yyval.term.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			yyval.term.addr = NewTemp(TopSymbolList, yyval.term.str, yyval.term.width);
+			if(yyvsp[-2].term.type == yyvsp[0].unary.type) {
+				if (yyvsp[-2].term.type == INT) {
+					Gen(OIntMultiply, yyvsp[-2].term.addr, yyvsp[0].unary.addr, yyval.term.addr, yyvsp[-2].term.str, yyvsp[0].unary.str, yyval.term.str); 
+				} else if (yyvsp[-2].term.type == FLOAT) {
+					Gen(OFloatMultiply, yyvsp[-2].term.addr, yyvsp[0].unary.addr, yyval.term.addr, yyvsp[-2].term.str, yyvsp[0].unary.str, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if(yyvsp[-2].term.type > yyvsp[0].unary.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[0].unary.addr, yyvsp[0].unary.type, yyvsp[0].unary.str, yyvsp[-2].term.type, tmpName, TopSymbolList);
+				if(yyvsp[-2].term.type == INT) {
+					Gen(OIntMultiply, yyvsp[-2].term.addr, tmpAddr, yyval.term.addr, yyvsp[-2].term.str, tmpName, yyval.term.str);	
+				} else if(yyvsp[-2].term.type == FLOAT) {
+					Gen(OFloatMultiply, yyvsp[-2].term.addr, tmpAddr, yyval.term.addr, yyvsp[-2].term.str, tmpName, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[-2].term.addr, yyvsp[-2].term.type, yyvsp[-2].term.str, yyvsp[0].unary.type, tmpName, TopSymbolList);
+				if(yyvsp[0].unary.type == INT) {
+					Gen(OIntMultiply, tmpAddr, yyvsp[0].unary.addr, yyval.term.addr, tmpName, yyvsp[0].unary.str, yyval.term.str);
+				} else if(yyvsp[0].unary.type == FLOAT) {
+					Gen(OFloatMultiply, tmpAddr, yyvsp[0].unary.addr, yyval.term.addr, tmpName, yyvsp[0].unary.str, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			yyval.term.truelist = NULL;
+			yyval.term.falselist = NULL;    
+        }
 break;
 case 36:
-#line 595 "compile.y"
-{ printf("产生式：factor->(expr)\n" );
-							strcpy( yyval.factor.str, yyvsp[-1].expr.str );
-							yyval.factor.type  = yyvsp[-1].expr.type;
-							yyval.factor.addr  = yyvsp[-1].expr.addr;
-							yyval.factor.width = yyvsp[-1].expr.width;
-                          }
+#line 1185 ".\compile.y"
+{ 
+            printf("产生式：term->term/unary\n"); 
+        
+            yyval.term.type = typeMax(yyvsp[-2].term.type, yyvsp[0].unary.type);
+			switch (yyval.term.type) {
+				case BOOL 	: yyval.term.width = BOOL_WIDTH; break;
+				case CHAR	: yyval.term.width = CHAR_WIDTH; break;
+	  	 	  	case INT	: yyval.term.width = INT_WIDTH; break;
+				case FLOAT 	: yyval.term.width = FLOAT_WIDTH; break;
+				default: yyerror("变量类型非法");
+			}
+			yyval.term.addr = NewTemp(TopSymbolList, yyval.term.str, yyval.term.width);
+			if(yyvsp[-2].term.type == yyvsp[0].unary.type) {
+				if (yyvsp[-2].term.type == INT) {
+					Gen(OIntDivide, yyvsp[-2].term.addr, yyvsp[0].unary.addr, yyval.term.addr, yyvsp[-2].term.str, yyvsp[0].unary.str, yyval.term.str); 
+				} else if (yyvsp[-2].term.type == FLOAT) {
+					Gen(OFloatDivide, yyvsp[-2].term.addr, yyvsp[0].unary.addr, yyval.term.addr, yyvsp[-2].term.str, yyvsp[0].unary.str, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");
+				}
+			} else if(yyvsp[-2].term.type > yyvsp[0].unary.type) {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[0].unary.addr, yyvsp[0].unary.type, yyvsp[0].unary.str, yyvsp[-2].term.type, tmpName, TopSymbolList);
+				if(yyvsp[-2].term.type == INT) {
+					Gen(OIntDivide, yyvsp[-2].term.addr, tmpAddr, yyval.term.addr, yyvsp[-2].term.str, tmpName, yyval.term.str);	
+				} else if(yyvsp[-2].term.type == FLOAT) {
+					Gen(OFloatDivide, yyvsp[-2].term.addr, tmpAddr, yyval.term.addr, yyvsp[-2].term.str, tmpName, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}				  
+			} else {
+				char tmpName[10];
+     			int tmpAddr = typeWiden(yyvsp[-2].term.addr, yyvsp[-2].term.type, yyvsp[-2].term.str, yyvsp[0].unary.type, tmpName, TopSymbolList);
+				if(yyvsp[0].unary.type == INT) {
+					Gen(OIntDivide, tmpAddr, yyvsp[0].unary.addr, yyval.term.addr, tmpName, yyvsp[0].unary.str, yyval.term.str);
+				} else if(yyvsp[0].unary.type == FLOAT) {
+					Gen(OFloatDivide, tmpAddr, yyvsp[0].unary.addr, yyval.term.addr, tmpName, yyvsp[0].unary.str, yyval.term.str);
+				} else {
+					yyerror("非整型或浮点型运算");	
+				}			  
+			}
+			yyval.term.truelist = NULL;
+			yyval.term.falselist = NULL;
+        }
 break;
 case 37:
-#line 602 "compile.y"
+#line 1231 ".\compile.y"
 { 
-	                        struct SymbolElem * p;
-							printf("产生式：factor->id\n"); 
-							p = LookUpAllSymbolList( TopSymbolList, yyvsp[0].id.name );
-							if( p != NULL ) {
-								strcpy( yyval.factor.str, p->name );
-								yyval.factor.type  = p->type;
-								yyval.factor.addr  = p->addr;
-								yyval.factor.width = p->width;
-							}							    
-							else {
-							    yyerror( "变量名没有定义" );
-								strcpy( yyval.factor.str, "no_id_defined" ); /*容错处理*/
-								yyval.factor.type = INT;
-								yyval.factor.addr = -1;
-								yyval.factor.width = INT_WIDTH;							    
-							}
-	                      }
+            printf("产生式：term->unary\n");
+            
+            strcpy(yyval.term.str, yyvsp[0].unary.str);
+			yyval.term.type = yyvsp[0].unary.type;	
+			yyval.term.addr = yyvsp[0].unary.addr;
+			yyval.term.width = yyvsp[0].unary.width;
+			yyval.term.truelist = yyvsp[0].unary.truelist;
+			yyval.term.falselist = yyvsp[0].unary.falselist;
+        }
 break;
 case 38:
-#line 621 "compile.y"
-{                        
-							struct ConstElem * p; 
-							    printf("产生式：factor->CONST\n");
-
-								p = LookUpConstList( yyvsp[0].constval.type, yyvsp[0].constval.value, yyvsp[0].constval.width ) ;
-								if( p== NULL )
-                                    p = AddToConstList( yyvsp[0].constval.str, yyvsp[0].constval.type, yyvsp[0].constval.value, yyvsp[0].constval.width );
-
-								strcpy( yyval.factor.str, yyvsp[0].constval.str );
-								yyval.factor.type  = yyvsp[0].constval.type;
-								yyval.factor.addr  = p->addr;
-								yyval.factor.width = p->width;
-                          }
+#line 1244 ".\compile.y"
+{
+            printf("产生式：unary -> !unary\n");
+            strcpy(yyval.unary.str, yyvsp[0].unary.str);
+			yyval.unary.type = yyvsp[0].unary.type;
+			yyval.unary.addr = yyvsp[0].unary.addr;
+		  	yyval.unary.width = yyvsp[0].unary.width;
+			yyval.unary.truelist = yyvsp[0].unary.falselist;
+			yyval.unary.falselist = yyvsp[0].unary.truelist;
+        }
 break;
-#line 1094 "y.tab.c"
+case 39:
+#line 1255 ".\compile.y"
+{
+            printf("产生式：unary -> -unary\n");
+            yyval.unary.type = yyvsp[0].unary.type;
+			yyval.unary.width = yyvsp[0].unary.width;
+			yyval.unary.truelist = NULL;
+			yyval.unary.falselist = NULL;	
+		    yyval.unary.addr = NewTemp(TopSymbolList, yyval.unary.str, yyval.unary.width);
+		    if(yyvsp[0].unary.type == INT) {
+		    	Gen(OIntUminus, yyvsp[0].unary.addr, 0, yyval.unary.addr, yyvsp[0].unary.str, "", yyval.unary.str);
+		    } else if(yyvsp[0].unary.type == FLOAT) {
+				Gen(OFloatUminus, yyvsp[0].unary.addr, 0, yyval.unary.addr, yyvsp[0].unary.str, "", yyval.unary.str);
+		    } else {
+		    	yyerror("非整型或浮点型运算");
+		    }			  
+        }
+break;
+case 40:
+#line 1272 ".\compile.y"
+{
+            printf("产生式：unary -> factor\n");
+            strcpy( yyval.unary.str, yyvsp[0].factor.str );
+			yyval.unary.type = yyvsp[0].factor.type;
+			yyval.unary.addr = yyvsp[0].factor.addr;
+			yyval.unary.width = yyvsp[0].factor.width;
+			yyval.unary.truelist = yyvsp[0].factor.truelist;
+			yyval.unary.falselist = yyvsp[0].factor.falselist;
+        }
+break;
+case 41:
+#line 1284 ".\compile.y"
+{
+            printf("产生式：factor->(expr)\n" );
+            
+            strcpy(yyval.factor.str, yyvsp[-1].expr.str);
+			yyval.factor.type = yyvsp[-1].expr.type;
+			yyval.factor.addr = yyvsp[-1].expr.addr;
+			yyval.factor.width = yyvsp[-1].expr.width;
+			yyval.factor.truelist = yyvsp[-1].expr.truelist;
+			yyval.factor.falselist = yyvsp[-1].expr.falselist;
+        }
+break;
+case 42:
+#line 1296 ".\compile.y"
+{ 
+            struct SymbolElem * p;
+            printf("产生式：factor->id\n"); 
+            p = LookUpAllSymbolList( TopSymbolList, yyvsp[0].id.name );
+            if( p != NULL ) {
+                strcpy( yyval.factor.str, p->name );
+                yyval.factor.type  = p->type;
+                yyval.factor.addr  = p->addr;
+                yyval.factor.width = p->width;
+            }							    
+            else {
+                yyerror( "变量名没有定义" );
+                strcpy( yyval.factor.str, "no_id_defined" ); /*容错处理*/
+                yyval.factor.type = INT;
+                yyval.factor.addr = -1;
+                yyval.factor.width = INT_WIDTH;							    
+            }
+            yyval.factor.truelist = NULL;
+			yyval.factor.falselist = NULL;
+        }
+break;
+case 43:
+#line 1318 ".\compile.y"
+{                        
+            struct ConstElem * p; 
+            printf("产生式：factor->CONST\n");
+
+            p = LookUpConstList( yyvsp[0].constval.type, yyvsp[0].constval.value, yyvsp[0].constval.width ) ;
+            if( p== NULL )
+                p = AddToConstList( yyvsp[0].constval.str, yyvsp[0].constval.type, yyvsp[0].constval.value, yyvsp[0].constval.width );
+
+            strcpy( yyval.factor.str, yyvsp[0].constval.str );
+            yyval.factor.type  = yyvsp[0].constval.type;
+            yyval.factor.addr  = p->addr;
+            yyval.factor.width = p->width;
+            yyval.factor.truelist = NULL;
+			yyval.factor.falselist = NULL;
+        }
+break;
+#line 1747 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;
